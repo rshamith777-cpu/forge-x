@@ -12,7 +12,7 @@ export const TimeMachineView: React.FC<{ onNavigate: (tab: string) => void }> = 
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetchTimeMachineTimeline().then(res => {
+    fetchTimeMachineTimeline().then((res: any) => {
       setTimeline(res);
       if (res?.checkpoints?.length > 0) {
         // default to 10:30 AM (peak incident)
@@ -25,7 +25,7 @@ export const TimeMachineView: React.FC<{ onNavigate: (tab: string) => void }> = 
   useEffect(() => {
     if (selectedTimestamp) {
       setLoading(true);
-      inspectTimeMachine(selectedTimestamp).then(data => {
+      inspectTimeMachine(selectedTimestamp).then((data: any) => {
         setSnapshot(data);
         setLoading(false);
       });

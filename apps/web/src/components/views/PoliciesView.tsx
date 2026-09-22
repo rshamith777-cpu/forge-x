@@ -20,7 +20,7 @@ export const PoliciesView: React.FC<PoliciesViewProps> = ({ initialPolicyId, onN
   const [showChangeModal, setShowChangeModal] = useState(false);
 
   useEffect(() => {
-    fetchPoliciesSummary().then(res => {
+    fetchPoliciesSummary().then((res: any) => {
       const pols = res.policies || [];
       setPolicies(pols);
       setAuthorityMatrix(res.authority_matrix || []);
@@ -29,7 +29,7 @@ export const PoliciesView: React.FC<PoliciesViewProps> = ({ initialPolicyId, onN
         if (match) setSelectedPolicy(match);
       }
       setLoading(false);
-    }).catch(err => {
+    }).catch((err: any) => {
       console.error("Failed to load policies", err);
       setLoading(false);
     });

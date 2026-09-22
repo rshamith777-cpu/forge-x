@@ -7,7 +7,7 @@ export const ArchaeologyView: React.FC<{ onNavigate: (tab: string) => void }> = 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchArchaeology().then(res => {
+    fetchArchaeology().then((res: any) => {
       setData(res);
       setLoading(false);
     });

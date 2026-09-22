@@ -9,7 +9,7 @@ export const GenomesView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
   const [inspectModal, setInspectModal] = useState<{ type: 'evidence' | 'policy' | 'exception'; title: string; content: any } | null>(null);
 
   useEffect(() => {
-    fetchGenomes().then(res => {
+    fetchGenomes().then((res: any) => {
       setData(res);
       if (res?.genomes?.length > 0) {
         setSelectedGenome(res.genomes[0]);

@@ -20,10 +20,10 @@ export const AuditCenterView: React.FC<AuditCenterViewProps> = ({ initialSubTab,
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchAuditLedger().then(res => {
+    fetchAuditLedger().then((res: any) => {
       setLedger(res.ledger || []);
       setLoading(false);
-    }).catch(err => {
+    }).catch((err: any) => {
       console.error("Failed to load audit ledger", err);
       setLoading(false);
     });
