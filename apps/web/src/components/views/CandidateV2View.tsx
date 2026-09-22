@@ -175,21 +175,88 @@ export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
         </div>
       </div>
 
-      {/* Security Invariant Alert */}
+      {/* PHASE 6: SAFETY BOUNDARY & GOVERNANCE LIFECYCLE */}
       <div style={{
-        background: 'rgba(245, 158, 11, 0.08)',
-        border: '1px solid rgba(245, 158, 11, 0.3)',
-        borderRadius: '10px',
-        padding: '14px 18px',
+        background: 'rgba(6, 12, 24, 0.85)',
+        border: '1px solid rgba(129, 140, 248, 0.35)',
+        borderRadius: '12px',
+        padding: '20px 24px',
         marginBottom: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px'
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)'
       }}>
-        <Lock size={18} color="#fbbf24" style={{ flexShrink: 0 }} />
-        <span style={{ fontSize: '13px', color: '#fef3c7' }}>
-          <strong>CRITICAL SECURITY INVARIANT:</strong> The AI never directly modifies production policies. Red Team attacks only generate Candidate Playbook V2. It remains quarantined until verified through FORGE LAB regression tests and authorized by human leadership.
-        </span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Lock size={16} color="#818cf8" />
+            <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff', letterSpacing: '0.04em' }}>
+              GOVERNANCE SAFETY BOUNDARY: 7-STAGE EVOLUTION LIFECYCLE
+            </span>
+          </div>
+          {/* Unmistakable 3-State Distinction: CANDIDATE vs APPROVED vs TRUSTED */}
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <span style={{
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: 800,
+              background: !isApproved ? 'rgba(244, 63, 94, 0.2)' : 'rgba(255,255,255,0.05)',
+              border: !isApproved ? '1px solid #f43f5e' : '1px solid rgba(255,255,255,0.1)',
+              color: !isApproved ? '#fb7185' : '#64748b'
+            }}>
+              1. CANDIDATE (QUARANTINED)
+            </span>
+            <span style={{ color: '#64748b', fontSize: '11px' }}>→</span>
+            <span style={{
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: 800,
+              background: isApproved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)',
+              border: isApproved ? '1px solid #34d399' : '1px solid rgba(255,255,255,0.1)',
+              color: isApproved ? '#34d399' : '#64748b'
+            }}>
+              2. APPROVED (HUMAN SIGNED)
+            </span>
+            <span style={{ color: '#64748b', fontSize: '11px' }}>→</span>
+            <span style={{
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: 800,
+              background: isApproved ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255,255,255,0.05)',
+              border: isApproved ? '1px solid #818cf8' : '1px solid rgba(255,255,255,0.1)',
+              color: isApproved ? '#a5b4fc' : '#64748b'
+            }}>
+              3. TRUSTED MEMORY
+            </span>
+          </div>
+        </div>
+
+        {/* 7-Stage Visual Pipeline: Production Policy V1 → Red Team → Candidate Policy V2 → FORGE LAB → Human Approval → Trusted Memory → Future Retrieval */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '14px' }}>
+          {[
+            { step: '1. PROD V1', name: 'Baseline Policy', status: 'Active (Bypassed)', color: '#f43f5e' },
+            { step: '2. RED TEAM', name: 'Synthetic Swarm', status: 'Breach Isolated', color: '#fb7185' },
+            { step: '3. CANDIDATE V2', name: 'Quarantined Patch', status: isApproved ? 'Mutated' : 'Quarantined', color: '#fbbf24' },
+            { step: '4. FORGE LAB', name: 'Empirical Verification', status: '94% Defense', color: '#38bdf8' },
+            { step: '5. HUMAN APPROVAL', name: 'Operations Sign-off', status: isApproved ? 'APPROVED' : 'PENDING REVIEW', color: isApproved ? '#34d399' : '#f59e0b' },
+            { step: '6. TRUSTED MEMORY', name: 'Organizational Index', status: isApproved ? 'INDEXED' : 'Awaiting Gate', color: isApproved ? '#818cf8' : '#64748b' },
+            { step: '7. RETRIEVAL', name: 'Future Hot Path', status: isApproved ? 'ACCESSIBLE' : 'Locked', color: isApproved ? '#34d399' : '#64748b' }
+          ].map((item, idx) => (
+            <div key={idx} style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '6px', padding: '10px 8px', borderTop: `2px solid ${item.color}`, textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', fontWeight: 800, color: item.color, letterSpacing: '0.03em' }}>{item.step}</div>
+              <div style={{ fontSize: '11px', color: '#fff', fontWeight: 700, marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+              <div style={{ fontSize: '9.5px', color: '#94a3b8', marginTop: '2px' }}>{item.status}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: '12px', color: '#cbd5e1', background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Lock size={14} color="#fbbf24" />
+          <span>
+            <strong>GOVERNANCE INVARIANT:</strong> The AI engine cannot self-promote candidate policies. Candidate V2 remains strictly quarantined until human executive sign-off in this view.
+          </span>
+        </div>
       </div>
 
       {/* Grid: Failure Pattern & Candidate V2 Specification */}

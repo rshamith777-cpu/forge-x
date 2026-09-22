@@ -4,22 +4,31 @@ import {
   AlertTriangle, Bug, Lock, CheckCircle2, ChevronRight, Terminal, Zap,
   Search, Filter, ExternalLink
 } from 'lucide-react';
-import { fetchRedTeamEvolution, runRedTeamAttack } from '../lib/api';
+import { fetchRedTeamEvolution, runRedTeamAttack, fetchRedTeamScenarios } from '../lib/api';
 
 export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ onNavigate }) => {
   const [narrative, setNarrative] = useState<any>(null);
+  const [scenarios, setScenarios] = useState<any[]>([]);
+  const [selectedScenario, setSelectedScenario] = useState<any>(null);
   const [running, setRunning] = useState<boolean>(false);
   const [botProgress, setBotProgress] = useState<number>(0);
   const [currentBotLog, setCurrentBotLog] = useState<string>('');
   const [attackCompleted, setAttackCompleted] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'narrative' | 'cases' | 'diff'>('narrative');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'narrative' | 'cases' | 'diff'>('matrix');
   const [caseFilter, setCaseFilter] = useState<'all' | 'v1_breached' | 'v2_blocked' | 'v2_evaded'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const loadData = async () => {
     try {
-      const data = await fetchRedTeamEvolution();
+      const [data, scenRes] = await Promise.all([
+        fetchRedTeamEvolution(),
+        fetchRedTeamScenarios().catch(() => null)
+      ]);
       setNarrative(data);
+      if (scenRes?.scenarios?.length > 0) {
+        setScenarios(scenRes.scenarios);
+        setSelectedScenario(scenRes.scenarios[0]);
+      }
     } catch (err) {
       console.error("Failed to load red team evolution data", err);
     }
@@ -423,6 +432,22 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
       {/* Sub-Navigation Tabs */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button 
+          onClick={() => setActiveTab('matrix')}
+          style={{
+            padding: '9px 18px',
+            borderRadius: '8px',
+            border: activeTab === 'matrix' ? '1px solid #f43f5e' : '1px solid rgba(255, 255, 255, 0.1)',
+            background: activeTab === 'matrix' ? 'rgba(244, 63, 94, 0.25)' : 'rgba(255, 255, 255, 0.03)',
+            color: activeTab === 'matrix' ? '#fff' : '#94a3b8',
+            fontWeight: 700,
+            fontSize: '13px',
+            cursor: 'pointer',
+            fontFamily: "'Rowdies', sans-serif"
+          }}
+        >
+          Structured Attack Matrix (5 Scenarios)
+        </button>
+        <button 
           onClick={() => setActiveTab('narrative')}
           style={{
             padding: '9px 18px',
@@ -471,6 +496,172 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
           Policy Mutation & Regression Tests
         </button>
       </div>
+
+      {/* TAB 0: STRUCTURED ATTACK MATRIX (Phase 3 Requirement) */}
+      {activeTab === 'matrix' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Scenario Selector Pills */}
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {scenarios.map((scen: any) => {
+              const isSelected = selectedScenario?.attack_id === scen.attack_id;
+              return (
+                <button
+                  key={scen.attack_id}
+                  onClick={() => setSelectedScenario(scen)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: isSelected ? '1px solid #f43f5e' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: isSelected ? 'rgba(244, 63, 94, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                    color: isSelected ? '#fff' : '#94a3b8',
+                    fontSize: '12.5px',
+                    fontWeight: isSelected ? 800 : 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Bug size={14} color={isSelected ? '#f43f5e' : '#64748b'} />
+                  <span>{scen.attack_name}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedScenario && (
+            <div className="glass-panel" style={{ padding: '26px', border: '1px solid rgba(244, 63, 94, 0.35)', background: 'rgba(8, 14, 26, 0.75)' }}>
+              {/* Scenario Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '16px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span className="badge badge-rose">{selectedScenario.category}</span>
+                    <span className="badge badge-indigo">{selectedScenario.attack_id}</span>
+                    <span className="badge badge-amber">{selectedScenario.status}</span>
+                  </div>
+                  <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', margin: '6px 0 0 0' }}>
+                    {selectedScenario.attack_name}
+                  </h2>
+                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
+                    Attack Vector: <code>{selectedScenario.attack_vector}</code>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => onNavigate('forgelab')}
+                    style={{
+                      background: 'rgba(16, 185, 129, 0.2)',
+                      border: '1px solid rgba(16, 185, 129, 0.4)',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      color: '#34d399',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <CheckCircle2 size={14} /> Validate in FORGE LAB
+                  </button>
+                  <button
+                    onClick={() => onNavigate('candidate')}
+                    style={{
+                      background: 'rgba(99, 102, 241, 0.2)',
+                      border: '1px solid rgba(99, 102, 241, 0.4)',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      color: '#818cf8',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <ArrowRight size={14} /> Inspect Candidate V2
+                  </button>
+                </div>
+              </div>
+
+              {/* 5-Step Flow Pipeline: ATTACK → OBSERVED FAILURE → ROOT CAUSE → CANDIDATE V2 → FORGE LAB VALIDATION */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '10px', textTransform: 'uppercase' }}>
+                  Adversarial Progression Flow
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
+                  {[
+                    { title: '1. ATTACK', val: selectedScenario.attack_name, color: '#f43f5e' },
+                    { title: '2. OBSERVED FAILURE', val: selectedScenario.observed_behavior, color: '#fb7185' },
+                    { title: '3. ROOT CAUSE', val: selectedScenario.root_cause, color: '#fbbf24' },
+                    { title: '4. CANDIDATE V2', val: selectedScenario.candidate_playbook_v2, color: '#818cf8' },
+                    { title: '5. FORGE LAB VALIDATION', val: selectedScenario.forge_lab_validation, color: '#34d399' }
+                  ].map((step, idx) => (
+                    <div key={idx} style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '8px', padding: '12px', borderTop: `3px solid ${step.color}` }}>
+                      <div style={{ fontSize: '10px', fontWeight: 800, color: step.color, letterSpacing: '0.03em' }}>{step.title}</div>
+                      <div style={{ fontSize: '12px', color: '#e2e8f0', marginTop: '6px', lineHeight: 1.3, fontWeight: 500 }}>{step.val}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 9-Field Structured Results Table */}
+              <div style={{ background: 'rgba(0,0,0,0.35)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: '12px', fontWeight: 700, color: '#fff' }}>
+                  STRUCTURED ADVERSARIAL AUDIT FIELDS (9-POINT AUDIT SCHEMA)
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', width: '220px', fontWeight: 700 }}>Attack</td>
+                      <td style={{ padding: '10px 16px', color: '#fff', fontWeight: 600 }}>{selectedScenario.attack_name} (<code>{selectedScenario.attack_id}</code>)</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.01)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Expected Behavior</td>
+                      <td style={{ padding: '10px 16px', color: '#34d399' }}>{selectedScenario.expected_behavior}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Observed Behavior</td>
+                      <td style={{ padding: '10px 16px', color: '#f43f5e' }}>{selectedScenario.observed_behavior}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.01)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Failure Detected</td>
+                      <td style={{ padding: '10px 16px', color: '#fb7185', fontWeight: 700 }}>{selectedScenario.detection_label}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Root Cause</td>
+                      <td style={{ padding: '10px 16px', color: '#fbbf24' }}>{selectedScenario.root_cause}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.01)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Impact</td>
+                      <td style={{ padding: '10px 16px', color: '#fca5a5' }}>{selectedScenario.impact}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Candidate Mitigation</td>
+                      <td style={{ padding: '10px 16px', color: '#38bdf8' }}>{selectedScenario.candidate_mitigation}</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.01)' }}>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Candidate Playbook V2</td>
+                      <td style={{ padding: '10px 16px', color: '#a78bfa', fontWeight: 700 }}><code>{selectedScenario.candidate_playbook_v2}</code></td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontWeight: 700 }}>Status</td>
+                      <td style={{ padding: '10px 16px' }}>
+                        <span className="badge badge-amber" style={{ fontSize: '11px', fontWeight: 700 }}>
+                          {selectedScenario.status}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* TAB 1: 6-Step Learning Loop */}
       {activeTab === 'narrative' && (

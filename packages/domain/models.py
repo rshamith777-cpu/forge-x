@@ -353,3 +353,34 @@ class AttackEvaluationResult(BaseModel):
     synthetic_benchmark: bool = True
     benchmark_provenance: str = "Controlled Adversarial Sandbox / Synthetic Enterprise Scenario"
 
+
+class StructuredAttackScenario(BaseModel):
+    """
+    Structured Red Team Attack Scenario representation (Phase 3).
+    Demonstrates: ATTACK -> OBSERVED FAILURE -> ROOT CAUSE -> CANDIDATE V2 -> FORGE LAB VALIDATION.
+    """
+    attack_id: str
+    attack_name: str
+    category: Literal["sybil_burst", "prompt_injection", "exception_abuse", "conflicting_evidence", "policy_boundary"]
+    attack_vector: str
+    expected_behavior: str
+    observed_behavior: str
+    failure_detected: bool
+    detection_label: Literal["BREACHED IN V1", "BLOCKED IN V1", "FLAGGED"]
+    root_cause: str
+    impact: str
+    candidate_mitigation: str
+    candidate_playbook_v2: str
+    status: Literal["VULNERABLE_IN_V1", "HARDENED_IN_V2", "QUARANTINED", "VERIFIED"]
+    forge_lab_validation: Dict[str, Any] = Field(default_factory=dict)
+    flow_steps: List[str] = Field(
+        default_factory=lambda: [
+            "1. Synthetic Attack Launched",
+            "2. Observed Failure Captured",
+            "3. Root Cause Analyzed",
+            "4. Candidate Playbook V2 Synthesized",
+            "5. FORGE LAB Regression Validated"
+        ]
+    )
+
+
