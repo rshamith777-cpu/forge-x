@@ -1,0 +1,1202 @@
+[
+  {
+    "id": "CASE-0001",
+    "tier": "enterprise",
+    "amount_claimed": 2041.86,
+    "is_outage_related": false,
+    "created_at": "2026-08-01T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 17925.52,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0002",
+    "tier": "enterprise",
+    "amount_claimed": 1009.01,
+    "is_outage_related": false,
+    "created_at": "2026-08-01T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 14330.11,
+    "primary_actor": "emp_12"
+  },
+  {
+    "id": "CASE-0003",
+    "tier": "starter",
+    "amount_claimed": 2151.5,
+    "is_outage_related": true,
+    "created_at": "2026-08-01T18:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4303.0,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0004",
+    "tier": "pro",
+    "amount_claimed": 2411.92,
+    "is_outage_related": false,
+    "created_at": "2026-08-02T00:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4823.84,
+    "primary_actor": "emp_02"
+  },
+  {
+    "id": "CASE-0005",
+    "tier": "enterprise",
+    "amount_claimed": 973.71,
+    "is_outage_related": true,
+    "created_at": "2026-08-02T07:00:00+00:00",
+    "status": "resolved",
+    "mrr": 23397.73,
+    "primary_actor": "emp_11"
+  },
+  {
+    "id": "CASE-0006",
+    "tier": "enterprise",
+    "amount_claimed": 542.91,
+    "is_outage_related": true,
+    "created_at": "2026-08-02T12:00:00+00:00",
+    "status": "resolved",
+    "mrr": 11219.13,
+    "primary_actor": "emp_18"
+  },
+  {
+    "id": "CASE-0007",
+    "tier": "pro",
+    "amount_claimed": 3490.77,
+    "is_outage_related": true,
+    "created_at": "2026-08-02T15:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6981.54,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0008",
+    "tier": "enterprise",
+    "amount_claimed": 2214.69,
+    "is_outage_related": false,
+    "created_at": "2026-08-02T20:00:00+00:00",
+    "status": "resolved",
+    "mrr": 33611.73,
+    "primary_actor": "emp_03"
+  },
+  {
+    "id": "CASE-0009",
+    "tier": "strategic_partner",
+    "amount_claimed": 3400.22,
+    "is_outage_related": false,
+    "created_at": "2026-08-03T02:00:00+00:00",
+    "status": "resolved",
+    "mrr": 27865.41,
+    "primary_actor": "emp_04"
+  },
+  {
+    "id": "CASE-0010",
+    "tier": "pro",
+    "amount_claimed": 1549.94,
+    "is_outage_related": false,
+    "created_at": "2026-08-03T07:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3099.88,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0011",
+    "tier": "pro",
+    "amount_claimed": 3053.29,
+    "is_outage_related": true,
+    "created_at": "2026-08-03T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6106.58,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0012",
+    "tier": "starter",
+    "amount_claimed": 1910.86,
+    "is_outage_related": false,
+    "created_at": "2026-08-03T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3821.72,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0013",
+    "tier": "pro",
+    "amount_claimed": 435.94,
+    "is_outage_related": true,
+    "created_at": "2026-08-03T20:00:00+00:00",
+    "status": "resolved",
+    "mrr": 871.88,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0014",
+    "tier": "starter",
+    "amount_claimed": 345.5,
+    "is_outage_related": false,
+    "created_at": "2026-08-04T01:00:00+00:00",
+    "status": "resolved",
+    "mrr": 691.0,
+    "primary_actor": "emp_03"
+  },
+  {
+    "id": "CASE-0015",
+    "tier": "starter",
+    "amount_claimed": 3316.63,
+    "is_outage_related": true,
+    "created_at": "2026-08-04T09:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6633.26,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0016",
+    "tier": "strategic_partner",
+    "amount_claimed": 2509.67,
+    "is_outage_related": true,
+    "created_at": "2026-08-04T12:00:00+00:00",
+    "status": "resolved",
+    "mrr": 48734.47,
+    "primary_actor": "emp_12"
+  },
+  {
+    "id": "CASE-0017",
+    "tier": "starter",
+    "amount_claimed": 1216.4,
+    "is_outage_related": false,
+    "created_at": "2026-08-04T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2432.8,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0018",
+    "tier": "starter",
+    "amount_claimed": 839.85,
+    "is_outage_related": false,
+    "created_at": "2026-08-04T21:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1679.7,
+    "primary_actor": "emp_11"
+  },
+  {
+    "id": "CASE-0019",
+    "tier": "starter",
+    "amount_claimed": 789.12,
+    "is_outage_related": true,
+    "created_at": "2026-08-05T05:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1578.24,
+    "primary_actor": "emp_19"
+  },
+  {
+    "id": "CASE-0020",
+    "tier": "starter",
+    "amount_claimed": 2835.86,
+    "is_outage_related": true,
+    "created_at": "2026-08-05T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 5671.72,
+    "primary_actor": "emp_04"
+  },
+  {
+    "id": "CASE-0021",
+    "tier": "pro",
+    "amount_claimed": 1661.24,
+    "is_outage_related": false,
+    "created_at": "2026-08-05T15:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3322.48,
+    "primary_actor": "emp_04"
+  },
+  {
+    "id": "CASE-0022",
+    "tier": "enterprise",
+    "amount_claimed": 907.86,
+    "is_outage_related": true,
+    "created_at": "2026-08-05T17:00:00+00:00",
+    "status": "resolved",
+    "mrr": 14186.61,
+    "primary_actor": "emp_14"
+  },
+  {
+    "id": "CASE-0023",
+    "tier": "starter",
+    "amount_claimed": 1578.8,
+    "is_outage_related": false,
+    "created_at": "2026-08-05T22:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3157.6,
+    "primary_actor": "emp_18"
+  },
+  {
+    "id": "CASE-0024",
+    "tier": "enterprise",
+    "amount_claimed": 3393.04,
+    "is_outage_related": false,
+    "created_at": "2026-08-06T03:00:00+00:00",
+    "status": "resolved",
+    "mrr": 76098.52,
+    "primary_actor": "emp_06"
+  },
+  {
+    "id": "CASE-0025",
+    "tier": "starter",
+    "amount_claimed": 3163.43,
+    "is_outage_related": true,
+    "created_at": "2026-08-06T11:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6326.86,
+    "primary_actor": "emp_01"
+  },
+  {
+    "id": "CASE-0026",
+    "tier": "strategic_partner",
+    "amount_claimed": 1034.11,
+    "is_outage_related": false,
+    "created_at": "2026-08-06T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 21115.07,
+    "primary_actor": "emp_18"
+  },
+  {
+    "id": "CASE-0027",
+    "tier": "starter",
+    "amount_claimed": 3392.05,
+    "is_outage_related": false,
+    "created_at": "2026-08-06T19:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6784.1,
+    "primary_actor": "emp_18"
+  },
+  {
+    "id": "CASE-0028",
+    "tier": "starter",
+    "amount_claimed": 1784.83,
+    "is_outage_related": false,
+    "created_at": "2026-08-07T02:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3569.66,
+    "primary_actor": "emp_06"
+  },
+  {
+    "id": "CASE-0029",
+    "tier": "starter",
+    "amount_claimed": 286.4,
+    "is_outage_related": true,
+    "created_at": "2026-08-07T05:00:00+00:00",
+    "status": "resolved",
+    "mrr": 572.8,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0030",
+    "tier": "strategic_partner",
+    "amount_claimed": 2047.27,
+    "is_outage_related": true,
+    "created_at": "2026-08-07T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 19231.48,
+    "primary_actor": "emp_19"
+  },
+  {
+    "id": "CASE-0031",
+    "tier": "starter",
+    "amount_claimed": 873.47,
+    "is_outage_related": true,
+    "created_at": "2026-08-07T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1746.94,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0032",
+    "tier": "strategic_partner",
+    "amount_claimed": 82.14,
+    "is_outage_related": false,
+    "created_at": "2026-08-07T19:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1443.27,
+    "primary_actor": "emp_04"
+  },
+  {
+    "id": "CASE-0033",
+    "tier": "starter",
+    "amount_claimed": 506.98,
+    "is_outage_related": true,
+    "created_at": "2026-08-08T02:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1013.96,
+    "primary_actor": "emp_03"
+  },
+  {
+    "id": "CASE-0034",
+    "tier": "starter",
+    "amount_claimed": 2926.42,
+    "is_outage_related": false,
+    "created_at": "2026-08-08T08:00:00+00:00",
+    "status": "resolved",
+    "mrr": 5852.84,
+    "primary_actor": "emp_20"
+  },
+  {
+    "id": "CASE-0035",
+    "tier": "starter",
+    "amount_claimed": 3264.56,
+    "is_outage_related": true,
+    "created_at": "2026-08-08T12:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6529.12,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0036",
+    "tier": "enterprise",
+    "amount_claimed": 989.6,
+    "is_outage_related": false,
+    "created_at": "2026-08-08T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 19989.33,
+    "primary_actor": "emp_07"
+  },
+  {
+    "id": "CASE-0037",
+    "tier": "pro",
+    "amount_claimed": 368.43,
+    "is_outage_related": true,
+    "created_at": "2026-08-08T20:00:00+00:00",
+    "status": "resolved",
+    "mrr": 736.86,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0038",
+    "tier": "pro",
+    "amount_claimed": 2248.04,
+    "is_outage_related": true,
+    "created_at": "2026-08-09T02:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4496.08,
+    "primary_actor": "emp_15"
+  },
+  {
+    "id": "CASE-0039",
+    "tier": "pro",
+    "amount_claimed": 309.59,
+    "is_outage_related": false,
+    "created_at": "2026-08-09T06:00:00+00:00",
+    "status": "resolved",
+    "mrr": 619.18,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0040",
+    "tier": "enterprise",
+    "amount_claimed": 1532.76,
+    "is_outage_related": true,
+    "created_at": "2026-08-09T12:00:00+00:00",
+    "status": "resolved",
+    "mrr": 21763.78,
+    "primary_actor": "emp_02"
+  },
+  {
+    "id": "CASE-0041",
+    "tier": "starter",
+    "amount_claimed": 1270.19,
+    "is_outage_related": false,
+    "created_at": "2026-08-09T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2540.38,
+    "primary_actor": "emp_14"
+  },
+  {
+    "id": "CASE-0042",
+    "tier": "strategic_partner",
+    "amount_claimed": 3032.89,
+    "is_outage_related": false,
+    "created_at": "2026-08-09T22:00:00+00:00",
+    "status": "resolved",
+    "mrr": 66065.8,
+    "primary_actor": "emp_14"
+  },
+  {
+    "id": "CASE-0043",
+    "tier": "enterprise",
+    "amount_claimed": 2817.71,
+    "is_outage_related": false,
+    "created_at": "2026-08-10T05:00:00+00:00",
+    "status": "resolved",
+    "mrr": 61377.44,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0044",
+    "tier": "enterprise",
+    "amount_claimed": 817.4,
+    "is_outage_related": false,
+    "created_at": "2026-08-10T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 12935.48,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0045",
+    "tier": "enterprise",
+    "amount_claimed": 1182.5,
+    "is_outage_related": false,
+    "created_at": "2026-08-10T15:00:00+00:00",
+    "status": "resolved",
+    "mrr": 28896.89,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0046",
+    "tier": "strategic_partner",
+    "amount_claimed": 3290.37,
+    "is_outage_related": true,
+    "created_at": "2026-08-10T19:00:00+00:00",
+    "status": "resolved",
+    "mrr": 80603.57,
+    "primary_actor": "emp_06"
+  },
+  {
+    "id": "CASE-0047",
+    "tier": "starter",
+    "amount_claimed": 1242.62,
+    "is_outage_related": false,
+    "created_at": "2026-08-11T01:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2485.24,
+    "primary_actor": "emp_14"
+  },
+  {
+    "id": "CASE-0048",
+    "tier": "starter",
+    "amount_claimed": 928.79,
+    "is_outage_related": false,
+    "created_at": "2026-08-11T04:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1857.58,
+    "primary_actor": "emp_01"
+  },
+  {
+    "id": "CASE-0049",
+    "tier": "enterprise",
+    "amount_claimed": 1306.56,
+    "is_outage_related": true,
+    "created_at": "2026-08-11T09:00:00+00:00",
+    "status": "resolved",
+    "mrr": 25206.21,
+    "primary_actor": "emp_11"
+  },
+  {
+    "id": "CASE-0050",
+    "tier": "enterprise",
+    "amount_claimed": 1799.57,
+    "is_outage_related": false,
+    "created_at": "2026-08-11T15:00:00+00:00",
+    "status": "resolved",
+    "mrr": 24375.37,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0051",
+    "tier": "pro",
+    "amount_claimed": 2386.75,
+    "is_outage_related": false,
+    "created_at": "2026-08-11T21:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4773.5,
+    "primary_actor": "emp_20"
+  },
+  {
+    "id": "CASE-0052",
+    "tier": "pro",
+    "amount_claimed": 1098.37,
+    "is_outage_related": true,
+    "created_at": "2026-08-11T23:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2196.74,
+    "primary_actor": "emp_19"
+  },
+  {
+    "id": "CASE-0053",
+    "tier": "pro",
+    "amount_claimed": 2380.91,
+    "is_outage_related": false,
+    "created_at": "2026-08-12T07:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4761.82,
+    "primary_actor": "emp_06"
+  },
+  {
+    "id": "CASE-0054",
+    "tier": "starter",
+    "amount_claimed": 372.19,
+    "is_outage_related": false,
+    "created_at": "2026-08-12T11:00:00+00:00",
+    "status": "resolved",
+    "mrr": 744.38,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0055",
+    "tier": "starter",
+    "amount_claimed": 558.37,
+    "is_outage_related": true,
+    "created_at": "2026-08-12T15:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1116.74,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0056",
+    "tier": "pro",
+    "amount_claimed": 2528.29,
+    "is_outage_related": true,
+    "created_at": "2026-08-12T20:00:00+00:00",
+    "status": "resolved",
+    "mrr": 5056.58,
+    "primary_actor": "emp_13"
+  },
+  {
+    "id": "CASE-0057",
+    "tier": "enterprise",
+    "amount_claimed": 3129.68,
+    "is_outage_related": false,
+    "created_at": "2026-08-13T00:00:00+00:00",
+    "status": "resolved",
+    "mrr": 72148.23,
+    "primary_actor": "emp_14"
+  },
+  {
+    "id": "CASE-0058",
+    "tier": "pro",
+    "amount_claimed": 3215.27,
+    "is_outage_related": true,
+    "created_at": "2026-08-13T06:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6430.54,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0059",
+    "tier": "strategic_partner",
+    "amount_claimed": 3327.64,
+    "is_outage_related": false,
+    "created_at": "2026-08-13T12:00:00+00:00",
+    "status": "resolved",
+    "mrr": 61278.79,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0060",
+    "tier": "enterprise",
+    "amount_claimed": 1602.74,
+    "is_outage_related": false,
+    "created_at": "2026-08-13T18:00:00+00:00",
+    "status": "resolved",
+    "mrr": 35705.31,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0061",
+    "tier": "starter",
+    "amount_claimed": 317.32,
+    "is_outage_related": true,
+    "created_at": "2026-08-13T23:00:00+00:00",
+    "status": "resolved",
+    "mrr": 634.64,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0062",
+    "tier": "enterprise",
+    "amount_claimed": 527.39,
+    "is_outage_related": true,
+    "created_at": "2026-08-14T01:00:00+00:00",
+    "status": "resolved",
+    "mrr": 10440.82,
+    "primary_actor": "emp_07"
+  },
+  {
+    "id": "CASE-0063",
+    "tier": "pro",
+    "amount_claimed": 1484.42,
+    "is_outage_related": true,
+    "created_at": "2026-08-14T09:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2968.84,
+    "primary_actor": "emp_14"
+  },
+  {
+    "id": "CASE-0064",
+    "tier": "strategic_partner",
+    "amount_claimed": 3005.73,
+    "is_outage_related": false,
+    "created_at": "2026-08-14T11:00:00+00:00",
+    "status": "resolved",
+    "mrr": 43482.33,
+    "primary_actor": "emp_01"
+  },
+  {
+    "id": "CASE-0065",
+    "tier": "enterprise",
+    "amount_claimed": 1906.86,
+    "is_outage_related": false,
+    "created_at": "2026-08-14T19:00:00+00:00",
+    "status": "resolved",
+    "mrr": 41183.9,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0066",
+    "tier": "pro",
+    "amount_claimed": 1391.56,
+    "is_outage_related": false,
+    "created_at": "2026-08-14T21:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2783.12,
+    "primary_actor": "emp_13"
+  },
+  {
+    "id": "CASE-0067",
+    "tier": "strategic_partner",
+    "amount_claimed": 3178.9,
+    "is_outage_related": false,
+    "created_at": "2026-08-15T02:00:00+00:00",
+    "status": "resolved",
+    "mrr": 61260.57,
+    "primary_actor": "emp_03"
+  },
+  {
+    "id": "CASE-0068",
+    "tier": "enterprise",
+    "amount_claimed": 223.48,
+    "is_outage_related": true,
+    "created_at": "2026-08-15T08:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2591.97,
+    "primary_actor": "emp_11"
+  },
+  {
+    "id": "CASE-0069",
+    "tier": "starter",
+    "amount_claimed": 920.34,
+    "is_outage_related": true,
+    "created_at": "2026-08-15T15:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1840.68,
+    "primary_actor": "emp_01"
+  },
+  {
+    "id": "CASE-0070",
+    "tier": "strategic_partner",
+    "amount_claimed": 823.57,
+    "is_outage_related": true,
+    "created_at": "2026-08-15T19:00:00+00:00",
+    "status": "resolved",
+    "mrr": 19991.22,
+    "primary_actor": "emp_02"
+  },
+  {
+    "id": "CASE-0071",
+    "tier": "enterprise",
+    "amount_claimed": 872.98,
+    "is_outage_related": false,
+    "created_at": "2026-08-15T23:00:00+00:00",
+    "status": "resolved",
+    "mrr": 8681.45,
+    "primary_actor": "emp_07"
+  },
+  {
+    "id": "CASE-0072",
+    "tier": "starter",
+    "amount_claimed": 2733.38,
+    "is_outage_related": true,
+    "created_at": "2026-08-16T03:00:00+00:00",
+    "status": "resolved",
+    "mrr": 5466.76,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0073",
+    "tier": "starter",
+    "amount_claimed": 2036.5,
+    "is_outage_related": false,
+    "created_at": "2026-08-16T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4073.0,
+    "primary_actor": "emp_13"
+  },
+  {
+    "id": "CASE-0074",
+    "tier": "starter",
+    "amount_claimed": 401.56,
+    "is_outage_related": false,
+    "created_at": "2026-08-16T14:00:00+00:00",
+    "status": "resolved",
+    "mrr": 803.12,
+    "primary_actor": "emp_20"
+  },
+  {
+    "id": "CASE-0075",
+    "tier": "enterprise",
+    "amount_claimed": 1887.97,
+    "is_outage_related": false,
+    "created_at": "2026-08-16T20:00:00+00:00",
+    "status": "resolved",
+    "mrr": 17316.96,
+    "primary_actor": "emp_11"
+  },
+  {
+    "id": "CASE-0076",
+    "tier": "starter",
+    "amount_claimed": 2242.77,
+    "is_outage_related": false,
+    "created_at": "2026-08-17T01:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4485.54,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0077",
+    "tier": "enterprise",
+    "amount_claimed": 2174.9,
+    "is_outage_related": false,
+    "created_at": "2026-08-17T06:00:00+00:00",
+    "status": "resolved",
+    "mrr": 46040.25,
+    "primary_actor": "emp_15"
+  },
+  {
+    "id": "CASE-0078",
+    "tier": "enterprise",
+    "amount_claimed": 1012.3,
+    "is_outage_related": false,
+    "created_at": "2026-08-17T09:00:00+00:00",
+    "status": "resolved",
+    "mrr": 21013.42,
+    "primary_actor": "emp_19"
+  },
+  {
+    "id": "CASE-0079",
+    "tier": "starter",
+    "amount_claimed": 677.35,
+    "is_outage_related": true,
+    "created_at": "2026-08-17T16:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1354.7,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0080",
+    "tier": "enterprise",
+    "amount_claimed": 1967.48,
+    "is_outage_related": false,
+    "created_at": "2026-08-17T21:00:00+00:00",
+    "status": "resolved",
+    "mrr": 22130.13,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0081",
+    "tier": "enterprise",
+    "amount_claimed": 2278.37,
+    "is_outage_related": false,
+    "created_at": "2026-08-18T03:00:00+00:00",
+    "status": "resolved",
+    "mrr": 48939.07,
+    "primary_actor": "emp_03"
+  },
+  {
+    "id": "CASE-0082",
+    "tier": "enterprise",
+    "amount_claimed": 2340.66,
+    "is_outage_related": true,
+    "created_at": "2026-08-18T07:00:00+00:00",
+    "status": "resolved",
+    "mrr": 40748.64,
+    "primary_actor": "emp_12"
+  },
+  {
+    "id": "CASE-0083",
+    "tier": "enterprise",
+    "amount_claimed": 1107.85,
+    "is_outage_related": true,
+    "created_at": "2026-08-18T12:00:00+00:00",
+    "status": "resolved",
+    "mrr": 22447.07,
+    "primary_actor": "emp_11"
+  },
+  {
+    "id": "CASE-0084",
+    "tier": "starter",
+    "amount_claimed": 1003.92,
+    "is_outage_related": false,
+    "created_at": "2026-08-18T18:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2007.84,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0085",
+    "tier": "strategic_partner",
+    "amount_claimed": 1072.05,
+    "is_outage_related": true,
+    "created_at": "2026-08-18T21:00:00+00:00",
+    "status": "resolved",
+    "mrr": 14085.18,
+    "primary_actor": "emp_18"
+  },
+  {
+    "id": "CASE-0086",
+    "tier": "strategic_partner",
+    "amount_claimed": 2456.09,
+    "is_outage_related": true,
+    "created_at": "2026-08-19T03:00:00+00:00",
+    "status": "resolved",
+    "mrr": 55910.04,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0087",
+    "tier": "starter",
+    "amount_claimed": 1569.62,
+    "is_outage_related": true,
+    "created_at": "2026-08-19T09:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3139.24,
+    "primary_actor": "emp_02"
+  },
+  {
+    "id": "CASE-0088",
+    "tier": "starter",
+    "amount_claimed": 1432.44,
+    "is_outage_related": true,
+    "created_at": "2026-08-19T11:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2864.88,
+    "primary_actor": "emp_02"
+  },
+  {
+    "id": "CASE-0089",
+    "tier": "enterprise",
+    "amount_claimed": 343.87,
+    "is_outage_related": true,
+    "created_at": "2026-08-19T18:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6013.34,
+    "primary_actor": "emp_14"
+  },
+  {
+    "id": "CASE-0090",
+    "tier": "enterprise",
+    "amount_claimed": 2726.14,
+    "is_outage_related": true,
+    "created_at": "2026-08-19T22:00:00+00:00",
+    "status": "resolved",
+    "mrr": 63913.19,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0091",
+    "tier": "pro",
+    "amount_claimed": 2153.23,
+    "is_outage_related": false,
+    "created_at": "2026-08-20T02:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4306.46,
+    "primary_actor": "emp_07"
+  },
+  {
+    "id": "CASE-0092",
+    "tier": "starter",
+    "amount_claimed": 591.85,
+    "is_outage_related": true,
+    "created_at": "2026-08-20T07:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1183.7,
+    "primary_actor": "emp_03"
+  },
+  {
+    "id": "CASE-0093",
+    "tier": "pro",
+    "amount_claimed": 1054.84,
+    "is_outage_related": true,
+    "created_at": "2026-08-20T15:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2109.68,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0094",
+    "tier": "starter",
+    "amount_claimed": 3237.49,
+    "is_outage_related": false,
+    "created_at": "2026-08-20T18:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6474.98,
+    "primary_actor": "emp_19"
+  },
+  {
+    "id": "CASE-0095",
+    "tier": "pro",
+    "amount_claimed": 2284.34,
+    "is_outage_related": false,
+    "created_at": "2026-08-20T23:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4568.68,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0096",
+    "tier": "starter",
+    "amount_claimed": 2102.9,
+    "is_outage_related": false,
+    "created_at": "2026-08-21T05:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4205.8,
+    "primary_actor": "emp_10"
+  },
+  {
+    "id": "CASE-0097",
+    "tier": "pro",
+    "amount_claimed": 2464.08,
+    "is_outage_related": false,
+    "created_at": "2026-08-21T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4928.16,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0098",
+    "tier": "pro",
+    "amount_claimed": 3118.51,
+    "is_outage_related": false,
+    "created_at": "2026-08-21T13:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6237.02,
+    "primary_actor": "emp_20"
+  },
+  {
+    "id": "CASE-0099",
+    "tier": "starter",
+    "amount_claimed": 3498.52,
+    "is_outage_related": false,
+    "created_at": "2026-08-21T18:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6997.04,
+    "primary_actor": "emp_09"
+  },
+  {
+    "id": "CASE-0100",
+    "tier": "enterprise",
+    "amount_claimed": 1673.23,
+    "is_outage_related": false,
+    "created_at": "2026-08-22T00:00:00+00:00",
+    "status": "resolved",
+    "mrr": 39443.45,
+    "primary_actor": "emp_06"
+  },
+  {
+    "id": "CASE-0101",
+    "tier": "enterprise",
+    "amount_claimed": 1671.54,
+    "is_outage_related": true,
+    "created_at": "2026-08-22T04:00:00+00:00",
+    "status": "resolved",
+    "mrr": 22495.57,
+    "primary_actor": "emp_04"
+  },
+  {
+    "id": "CASE-0102",
+    "tier": "enterprise",
+    "amount_claimed": 2335.91,
+    "is_outage_related": true,
+    "created_at": "2026-08-22T11:00:00+00:00",
+    "status": "resolved",
+    "mrr": 48887.08,
+    "primary_actor": "emp_02"
+  },
+  {
+    "id": "CASE-0103",
+    "tier": "starter",
+    "amount_claimed": 3397.14,
+    "is_outage_related": true,
+    "created_at": "2026-08-22T14:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6794.28,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0104",
+    "tier": "pro",
+    "amount_claimed": 697.16,
+    "is_outage_related": true,
+    "created_at": "2026-08-22T19:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1394.32,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0105",
+    "tier": "enterprise",
+    "amount_claimed": 971.34,
+    "is_outage_related": true,
+    "created_at": "2026-08-23T01:00:00+00:00",
+    "status": "resolved",
+    "mrr": 12526.88,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0106",
+    "tier": "pro",
+    "amount_claimed": 2498.75,
+    "is_outage_related": true,
+    "created_at": "2026-08-23T06:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4997.5,
+    "primary_actor": "emp_01"
+  },
+  {
+    "id": "CASE-0107",
+    "tier": "starter",
+    "amount_claimed": 1642.0,
+    "is_outage_related": true,
+    "created_at": "2026-08-23T10:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3284.0,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0108",
+    "tier": "pro",
+    "amount_claimed": 1483.44,
+    "is_outage_related": false,
+    "created_at": "2026-08-23T17:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2966.88,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0109",
+    "tier": "pro",
+    "amount_claimed": 707.61,
+    "is_outage_related": false,
+    "created_at": "2026-08-23T23:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1415.22,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0110",
+    "tier": "enterprise",
+    "amount_claimed": 1222.57,
+    "is_outage_related": false,
+    "created_at": "2026-08-24T04:00:00+00:00",
+    "status": "resolved",
+    "mrr": 15333.39,
+    "primary_actor": "emp_01"
+  },
+  {
+    "id": "CASE-0111",
+    "tier": "pro",
+    "amount_claimed": 3035.15,
+    "is_outage_related": true,
+    "created_at": "2026-08-24T09:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6070.3,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0112",
+    "tier": "pro",
+    "amount_claimed": 1620.94,
+    "is_outage_related": true,
+    "created_at": "2026-08-24T14:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3241.88,
+    "primary_actor": "emp_07"
+  },
+  {
+    "id": "CASE-0113",
+    "tier": "pro",
+    "amount_claimed": 3003.24,
+    "is_outage_related": true,
+    "created_at": "2026-08-24T17:00:00+00:00",
+    "status": "resolved",
+    "mrr": 6006.48,
+    "primary_actor": "emp_11"
+  },
+  {
+    "id": "CASE-0114",
+    "tier": "pro",
+    "amount_claimed": 1758.88,
+    "is_outage_related": true,
+    "created_at": "2026-08-24T22:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3517.76,
+    "primary_actor": "emp_17"
+  },
+  {
+    "id": "CASE-0115",
+    "tier": "enterprise",
+    "amount_claimed": 394.01,
+    "is_outage_related": false,
+    "created_at": "2026-08-25T05:00:00+00:00",
+    "status": "resolved",
+    "mrr": 3254.88,
+    "primary_actor": "emp_05"
+  },
+  {
+    "id": "CASE-0116",
+    "tier": "starter",
+    "amount_claimed": 1218.04,
+    "is_outage_related": false,
+    "created_at": "2026-08-25T09:00:00+00:00",
+    "status": "resolved",
+    "mrr": 2436.08,
+    "primary_actor": "emp_03"
+  },
+  {
+    "id": "CASE-0117",
+    "tier": "pro",
+    "amount_claimed": 2212.46,
+    "is_outage_related": false,
+    "created_at": "2026-08-25T14:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4424.92,
+    "primary_actor": "emp_16"
+  },
+  {
+    "id": "CASE-0118",
+    "tier": "pro",
+    "amount_claimed": 2227.51,
+    "is_outage_related": false,
+    "created_at": "2026-08-25T18:00:00+00:00",
+    "status": "resolved",
+    "mrr": 4455.02,
+    "primary_actor": "emp_08"
+  },
+  {
+    "id": "CASE-0119",
+    "tier": "strategic_partner",
+    "amount_claimed": 1580.69,
+    "is_outage_related": false,
+    "created_at": "2026-08-25T22:00:00+00:00",
+    "status": "resolved",
+    "mrr": 36922.09,
+    "primary_actor": "emp_02"
+  },
+  {
+    "id": "CASE-0120",
+    "tier": "pro",
+    "amount_claimed": 552.22,
+    "is_outage_related": false,
+    "created_at": "2026-08-26T06:00:00+00:00",
+    "status": "resolved",
+    "mrr": 1104.44,
+    "primary_actor": "emp_19"
+  }
+]

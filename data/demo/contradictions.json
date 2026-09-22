@@ -1,0 +1,29 @@
+[
+  {
+    "id": "CONTRA-001",
+    "documented_rule": "POL-OPS-012 mandates Tier-3 Director signoff for credits > $500 with up to 48 hours SLA.",
+    "observed_behavior": "Customer Engineering Staff bypass manager approval in 87% of enterprise outage claims, issuing up to $1,500 credits within 65 minutes.",
+    "policy_id": "POL-OPS-012",
+    "evidence_ids": [
+      "evt_001951",
+      "evt_000653"
+    ],
+    "frequency_observed": 82,
+    "severity": "critical",
+    "status": "open",
+    "suggested_resolution": "Update POL-OPS-012 to codify the 'Enterprise Fast-Track Credit' threshold up to $1,500 for Staff Engineers."
+  },
+  {
+    "id": "CONTRA-002",
+    "documented_rule": "All communication regarding outage refunds must occur inside Zendesk tickets.",
+    "observed_behavior": "Engineers negotiate and confirm refunds in private Slack DM channels and #incidents-war-room before updating tickets.",
+    "policy_id": "POL-OPS-012",
+    "evidence_ids": [
+      "evt_001951"
+    ],
+    "frequency_observed": 94,
+    "severity": "medium",
+    "status": "open",
+    "suggested_resolution": "Integrate Slack-to-Zendesk automatic conversation mirroring to capture tacit context."
+  }
+]

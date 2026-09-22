@@ -1,0 +1,142 @@
+[
+  {
+    "id": "emp_01",
+    "name": "Sarah Chen",
+    "role": "staff_support_lead",
+    "department": "Customer Engineering",
+    "tenure_years": 4.5
+  },
+  {
+    "id": "emp_02",
+    "name": "Marcus Vance",
+    "role": "support_engineer",
+    "department": "Customer Engineering",
+    "tenure_years": 1.2
+  },
+  {
+    "id": "emp_03",
+    "name": "Elena Rostova",
+    "role": "senior_support_eng",
+    "department": "Customer Engineering",
+    "tenure_years": 3.0
+  },
+  {
+    "id": "emp_04",
+    "name": "David Kim",
+    "role": "engineering_manager",
+    "department": "Support Operations",
+    "tenure_years": 5.0
+  },
+  {
+    "id": "emp_05",
+    "name": "Priya Sharma",
+    "role": "tam_director",
+    "department": "Customer Success",
+    "tenure_years": 4.0
+  },
+  {
+    "id": "emp_06",
+    "name": "Alex Thorne",
+    "role": "sre_incident_commander",
+    "department": "Platform Reliability",
+    "tenure_years": 3.5
+  },
+  {
+    "id": "emp_07",
+    "name": "Jessica Taylor",
+    "role": "billing_specialist",
+    "department": "Finance Ops",
+    "tenure_years": 2.1
+  },
+  {
+    "id": "emp_08",
+    "name": "Raj Patel",
+    "role": "senior_solutions_architect",
+    "department": "Solutions",
+    "tenure_years": 3.8
+  },
+  {
+    "id": "emp_09",
+    "name": "Olivia Martinez",
+    "role": "support_engineer",
+    "department": "Customer Engineering",
+    "tenure_years": 0.8
+  },
+  {
+    "id": "emp_10",
+    "name": "Liam O'Connor",
+    "role": "product_manager",
+    "department": "Core Platform",
+    "tenure_years": 2.5
+  },
+  {
+    "id": "emp_11",
+    "name": "Sophia Zhang",
+    "role": "legal_counsel",
+    "department": "Legal & Compliance",
+    "tenure_years": 4.2
+  },
+  {
+    "id": "emp_12",
+    "name": "Ethan Wright",
+    "role": "security_engineer",
+    "department": "InfoSec",
+    "tenure_years": 2.9
+  },
+  {
+    "id": "emp_13",
+    "name": "Chloe Bennett",
+    "role": "customer_success_manager",
+    "department": "Customer Success",
+    "tenure_years": 1.9
+  },
+  {
+    "id": "emp_14",
+    "name": "Noah Harris",
+    "role": "tier1_agent",
+    "department": "Customer Engineering",
+    "tenure_years": 0.5
+  },
+  {
+    "id": "emp_15",
+    "name": "Emma Wilson",
+    "role": "tier1_agent",
+    "department": "Customer Engineering",
+    "tenure_years": 0.7
+  },
+  {
+    "id": "emp_16",
+    "name": "Daniel Lee",
+    "role": "billing_manager",
+    "department": "Finance Ops",
+    "tenure_years": 6.1
+  },
+  {
+    "id": "emp_17",
+    "name": "Ava Campbell",
+    "role": "staff_architect",
+    "department": "Platform Reliability",
+    "tenure_years": 5.2
+  },
+  {
+    "id": "emp_18",
+    "name": "Lucas Scott",
+    "role": "support_engineer",
+    "department": "Customer Engineering",
+    "tenure_years": 1.5
+  },
+  {
+    "id": "emp_19",
+    "name": "Mia Robinson",
+    "role": "customer_advocate",
+    "department": "Customer Success",
+    "tenure_years": 2.3
+  },
+  {
+    "id": "emp_20",
+    "name": "Benjamin Clark",
+    "role": "vp_customer_experience",
+    "department": "Executive Leadership",
+    "tenure_years": 7.0
+  }
+]

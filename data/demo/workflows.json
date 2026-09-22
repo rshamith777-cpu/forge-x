@@ -1,0 +1,1255 @@
+[
+  {
+    "id": "WF-DOC-001",
+    "name": "Documented Enterprise Billing SOP",
+    "version": "1.0.0",
+    "type": "documented",
+    "domain": "billing_support",
+    "nodes": [
+      {
+        "id": "doc_start",
+        "label": "Ticket Received",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "doc_triage",
+        "label": "Triage & Investigate",
+        "stage_type": "activity",
+        "avg_duration_minutes": 45,
+        "is_undocumented": false
+      },
+      {
+        "id": "doc_manager_review",
+        "label": "Manager Review Queue (> $500)",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 2400,
+        "bottleneck_score": 0.88,
+        "is_undocumented": false
+      },
+      {
+        "id": "doc_refund_exec",
+        "label": "Execute Refund in Portal",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "doc_end",
+        "label": "Ticket Resolved",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_doc_1",
+        "source": "doc_start",
+        "target": "doc_triage",
+        "frequency": 120,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      },
+      {
+        "id": "e_doc_2",
+        "source": "doc_triage",
+        "target": "doc_manager_review",
+        "frequency": 120,
+        "probability": 1.0,
+        "avg_latency_minutes": 45
+      },
+      {
+        "id": "e_doc_3",
+        "source": "doc_manager_review",
+        "target": "doc_refund_exec",
+        "frequency": 110,
+        "probability": 0.92,
+        "avg_latency_minutes": 2400
+      },
+      {
+        "id": "e_doc_4",
+        "source": "doc_refund_exec",
+        "target": "doc_end",
+        "frequency": 110,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      }
+    ],
+    "bottlenecks": [
+      "doc_manager_review"
+    ],
+    "cycles": [],
+    "total_traces": 120,
+    "conformance_rate": 0.38
+  },
+  {
+    "id": "WF-DISC-001",
+    "name": "Discovered Actual Enterprise Support Process",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "billing_support",
+    "nodes": [
+      {
+        "id": "disc_start",
+        "label": "Ticket Received",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "disc_slack_search",
+        "label": "Slack Incident Search",
+        "stage_type": "activity",
+        "avg_duration_minutes": 12,
+        "is_undocumented": true
+      },
+      {
+        "id": "disc_dep_check",
+        "label": "Verify Outage Shards",
+        "stage_type": "activity",
+        "avg_duration_minutes": 18,
+        "is_undocumented": true
+      },
+      {
+        "id": "disc_direct_bypass",
+        "label": "Senior Staff Direct Credit Bypass",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 8,
+        "is_undocumented": true
+      },
+      {
+        "id": "disc_stripe_exec",
+        "label": "Stripe Direct Credit",
+        "stage_type": "activity",
+        "avg_duration_minutes": 5,
+        "is_undocumented": false
+      },
+      {
+        "id": "disc_end",
+        "label": "Resolved with 5-Star CSAT",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_disc_1",
+        "source": "disc_start",
+        "target": "disc_slack_search",
+        "frequency": 88,
+        "probability": 0.73,
+        "avg_latency_minutes": 12,
+        "is_undocumented_bypass": true
+      },
+      {
+        "id": "e_disc_2",
+        "source": "disc_slack_search",
+        "target": "disc_dep_check",
+        "frequency": 85,
+        "probability": 0.96,
+        "avg_latency_minutes": 18,
+        "is_undocumented_bypass": true
+      },
+      {
+        "id": "e_disc_3",
+        "source": "disc_dep_check",
+        "target": "disc_direct_bypass",
+        "frequency": 82,
+        "probability": 0.96,
+        "avg_latency_minutes": 8,
+        "is_undocumented_bypass": true
+      },
+      {
+        "id": "e_disc_4",
+        "source": "disc_direct_bypass",
+        "target": "disc_stripe_exec",
+        "frequency": 80,
+        "probability": 0.98,
+        "avg_latency_minutes": 5,
+        "is_undocumented_bypass": true
+      },
+      {
+        "id": "e_disc_5",
+        "source": "disc_stripe_exec",
+        "target": "disc_end",
+        "frequency": 80,
+        "probability": 1.0,
+        "avg_latency_minutes": 10,
+        "is_undocumented_bypass": false
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 120,
+    "conformance_rate": 0.89
+  },
+  {
+    "id": "WF-SRE-001",
+    "name": "Production Incident Triage",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "infra",
+    "nodes": [
+      {
+        "id": "WF-SRE-001_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SRE-001_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SRE-001_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SRE-001_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SRE-001_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-SRE-001_e1",
+        "source": "WF-SRE-001_n1",
+        "target": "WF-SRE-001_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-SRE-001_e2",
+        "source": "WF-SRE-001_n2",
+        "target": "WF-SRE-001_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-SRE-001_e3",
+        "source": "WF-SRE-001_n3",
+        "target": "WF-SRE-001_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-SRE-001_e4",
+        "source": "WF-SRE-001_n4",
+        "target": "WF-SRE-001_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-SEC-002",
+    "name": "Credential Revocation Protocol",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "security",
+    "nodes": [
+      {
+        "id": "WF-SEC-002_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SEC-002_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SEC-002_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SEC-002_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-SEC-002_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-SEC-002_e1",
+        "source": "WF-SEC-002_n1",
+        "target": "WF-SEC-002_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-SEC-002_e2",
+        "source": "WF-SEC-002_n2",
+        "target": "WF-SEC-002_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-SEC-002_e3",
+        "source": "WF-SEC-002_n3",
+        "target": "WF-SEC-002_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-SEC-002_e4",
+        "source": "WF-SEC-002_n4",
+        "target": "WF-SEC-002_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-OPS-003",
+    "name": "Enterprise Onboarding & Provisioning",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "customer_success",
+    "nodes": [
+      {
+        "id": "WF-OPS-003_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-OPS-003_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-OPS-003_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-OPS-003_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-OPS-003_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-OPS-003_e1",
+        "source": "WF-OPS-003_n1",
+        "target": "WF-OPS-003_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-OPS-003_e2",
+        "source": "WF-OPS-003_n2",
+        "target": "WF-OPS-003_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-OPS-003_e3",
+        "source": "WF-OPS-003_n3",
+        "target": "WF-OPS-003_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-OPS-003_e4",
+        "source": "WF-OPS-003_n4",
+        "target": "WF-OPS-003_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-REV-004",
+    "name": "Churn Risk Intervention",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "retention",
+    "nodes": [
+      {
+        "id": "WF-REV-004_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-REV-004_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-REV-004_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-REV-004_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-REV-004_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-REV-004_e1",
+        "source": "WF-REV-004_n1",
+        "target": "WF-REV-004_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-REV-004_e2",
+        "source": "WF-REV-004_n2",
+        "target": "WF-REV-004_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-REV-004_e3",
+        "source": "WF-REV-004_n3",
+        "target": "WF-REV-004_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-REV-004_e4",
+        "source": "WF-REV-004_n4",
+        "target": "WF-REV-004_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-DAT-005",
+    "name": "Customer Data Deletion & GDPR",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "compliance",
+    "nodes": [
+      {
+        "id": "WF-DAT-005_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DAT-005_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DAT-005_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DAT-005_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DAT-005_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-DAT-005_e1",
+        "source": "WF-DAT-005_n1",
+        "target": "WF-DAT-005_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-DAT-005_e2",
+        "source": "WF-DAT-005_n2",
+        "target": "WF-DAT-005_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-DAT-005_e3",
+        "source": "WF-DAT-005_n3",
+        "target": "WF-DAT-005_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-DAT-005_e4",
+        "source": "WF-DAT-005_n4",
+        "target": "WF-DAT-005_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-ACC-006",
+    "name": "Privileged IAM Escalation",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "security",
+    "nodes": [
+      {
+        "id": "WF-ACC-006_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-ACC-006_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-ACC-006_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-ACC-006_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-ACC-006_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-ACC-006_e1",
+        "source": "WF-ACC-006_n1",
+        "target": "WF-ACC-006_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-ACC-006_e2",
+        "source": "WF-ACC-006_n2",
+        "target": "WF-ACC-006_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-ACC-006_e3",
+        "source": "WF-ACC-006_n3",
+        "target": "WF-ACC-006_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-ACC-006_e4",
+        "source": "WF-ACC-006_n4",
+        "target": "WF-ACC-006_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-NET-007",
+    "name": "DDoS Mitigation Pipeline",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "network",
+    "nodes": [
+      {
+        "id": "WF-NET-007_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-NET-007_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-NET-007_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-NET-007_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-NET-007_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-NET-007_e1",
+        "source": "WF-NET-007_n1",
+        "target": "WF-NET-007_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-NET-007_e2",
+        "source": "WF-NET-007_n2",
+        "target": "WF-NET-007_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-NET-007_e3",
+        "source": "WF-NET-007_n3",
+        "target": "WF-NET-007_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-NET-007_e4",
+        "source": "WF-NET-007_n4",
+        "target": "WF-NET-007_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-API-008",
+    "name": "Rate Limit Anomaly Resolution",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "platform",
+    "nodes": [
+      {
+        "id": "WF-API-008_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-API-008_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-API-008_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-API-008_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-API-008_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-API-008_e1",
+        "source": "WF-API-008_n1",
+        "target": "WF-API-008_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-API-008_e2",
+        "source": "WF-API-008_n2",
+        "target": "WF-API-008_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-API-008_e3",
+        "source": "WF-API-008_n3",
+        "target": "WF-API-008_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-API-008_e4",
+        "source": "WF-API-008_n4",
+        "target": "WF-API-008_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-DEP-009",
+    "name": "Emergency Rollback Pipeline",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "infra",
+    "nodes": [
+      {
+        "id": "WF-DEP-009_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DEP-009_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DEP-009_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DEP-009_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-DEP-009_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-DEP-009_e1",
+        "source": "WF-DEP-009_n1",
+        "target": "WF-DEP-009_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-DEP-009_e2",
+        "source": "WF-DEP-009_n2",
+        "target": "WF-DEP-009_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-DEP-009_e3",
+        "source": "WF-DEP-009_n3",
+        "target": "WF-DEP-009_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-DEP-009_e4",
+        "source": "WF-DEP-009_n4",
+        "target": "WF-DEP-009_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-BIL-010",
+    "name": "Disputed Chargeback Arbitration",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "billing",
+    "nodes": [
+      {
+        "id": "WF-BIL-010_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-BIL-010_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-BIL-010_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-BIL-010_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-BIL-010_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-BIL-010_e1",
+        "source": "WF-BIL-010_n1",
+        "target": "WF-BIL-010_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-BIL-010_e2",
+        "source": "WF-BIL-010_n2",
+        "target": "WF-BIL-010_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-BIL-010_e3",
+        "source": "WF-BIL-010_n3",
+        "target": "WF-BIL-010_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-BIL-010_e4",
+        "source": "WF-BIL-010_n4",
+        "target": "WF-BIL-010_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-TAM-011",
+    "name": "Quarterly Executive Business Review",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "customer_success",
+    "nodes": [
+      {
+        "id": "WF-TAM-011_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-TAM-011_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-TAM-011_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-TAM-011_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-TAM-011_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-TAM-011_e1",
+        "source": "WF-TAM-011_n1",
+        "target": "WF-TAM-011_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-TAM-011_e2",
+        "source": "WF-TAM-011_n2",
+        "target": "WF-TAM-011_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-TAM-011_e3",
+        "source": "WF-TAM-011_n3",
+        "target": "WF-TAM-011_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-TAM-011_e4",
+        "source": "WF-TAM-011_n4",
+        "target": "WF-TAM-011_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-LGL-012",
+    "name": "Enterprise Subpoena & Legal Hold",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "legal",
+    "nodes": [
+      {
+        "id": "WF-LGL-012_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-LGL-012_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-LGL-012_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-LGL-012_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-LGL-012_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-LGL-012_e1",
+        "source": "WF-LGL-012_n1",
+        "target": "WF-LGL-012_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-LGL-012_e2",
+        "source": "WF-LGL-012_n2",
+        "target": "WF-LGL-012_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-LGL-012_e3",
+        "source": "WF-LGL-012_n3",
+        "target": "WF-LGL-012_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-LGL-012_e4",
+        "source": "WF-LGL-012_n4",
+        "target": "WF-LGL-012_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  },
+  {
+    "id": "WF-INT-013",
+    "name": "Partner API Integration Review",
+    "version": "1.0.0",
+    "type": "discovered",
+    "domain": "solutions",
+    "nodes": [
+      {
+        "id": "WF-INT-013_n1",
+        "label": "Trigger Event",
+        "stage_type": "start",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-INT-013_n2",
+        "label": "Context Gathering",
+        "stage_type": "activity",
+        "avg_duration_minutes": 15,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-INT-013_n3",
+        "label": "Decision Gateway",
+        "stage_type": "decision_point",
+        "avg_duration_minutes": 25,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-INT-013_n4",
+        "label": "Execution & Verification",
+        "stage_type": "activity",
+        "avg_duration_minutes": 30,
+        "is_undocumented": false
+      },
+      {
+        "id": "WF-INT-013_n5",
+        "label": "Outcome Recorded",
+        "stage_type": "end",
+        "avg_duration_minutes": 0,
+        "is_undocumented": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "WF-INT-013_e1",
+        "source": "WF-INT-013_n1",
+        "target": "WF-INT-013_n2",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 15
+      },
+      {
+        "id": "WF-INT-013_e2",
+        "source": "WF-INT-013_n2",
+        "target": "WF-INT-013_n3",
+        "frequency": 45,
+        "probability": 1.0,
+        "avg_latency_minutes": 25
+      },
+      {
+        "id": "WF-INT-013_e3",
+        "source": "WF-INT-013_n3",
+        "target": "WF-INT-013_n4",
+        "frequency": 42,
+        "probability": 0.93,
+        "avg_latency_minutes": 30
+      },
+      {
+        "id": "WF-INT-013_e4",
+        "source": "WF-INT-013_n4",
+        "target": "WF-INT-013_n5",
+        "frequency": 42,
+        "probability": 1.0,
+        "avg_latency_minutes": 10
+      }
+    ],
+    "bottlenecks": [],
+    "cycles": [],
+    "total_traces": 45,
+    "conformance_rate": 0.91
+  }
+]

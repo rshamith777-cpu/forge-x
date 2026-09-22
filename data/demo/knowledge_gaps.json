@@ -1,0 +1,20 @@
+[
+  {
+    "id": "GAP-001",
+    "area": "International Multi-Currency Disputes",
+    "description": "Your refund playbook has no validated behavior or tax compliance rules for EUR/GBP currency conversion adjustments during outages.",
+    "impact": "high",
+    "missing_evidence_count": 18,
+    "priority": 1,
+    "recommended_action": "Synthesize automated FX adjustment clause with Finance Ops team."
+  },
+  {
+    "id": "GAP-002",
+    "area": "SLA Claims During Cloud Provider Upstream Outages",
+    "description": "No formal decision genome exists when outage is caused by AWS US-East-1 vs ApexCloud application failure.",
+    "impact": "critical",
+    "missing_evidence_count": 34,
+    "priority": 2,
+    "recommended_action": "Add third-party upstream outage exception rule to Decision Genome."
+  }
+]
