@@ -15,55 +15,58 @@ import { OrganizationalMemoryView } from './components/views/OrganizationalMemor
 import { RedTeamView } from './components/RedTeamView';
 import { ForgeLabView } from './components/ForgeLabView';
 
-function parseRoute(pathname: string): { isLanding: boolean; module: string; incidentId: string | null } {
+function parseRoute(pathname: string): { isLanding: boolean; module: string; incidentId: string | null; showLogin: boolean } {
   const clean = pathname.replace(/\/$/, '') || '/';
+  if (clean === '/login' || clean === '/signin') {
+    return { isLanding: true, module: 'home', incidentId: null, showLogin: true };
+  }
   if (clean === '' || clean === '/' || clean === '/landing') {
-    return { isLanding: true, module: 'home', incidentId: null };
+    return { isLanding: true, module: 'home', incidentId: null, showLogin: false };
   }
   if (clean === '/app/decide') {
-    return { isLanding: false, module: 'decide', incidentId: null };
+    return { isLanding: false, module: 'decide', incidentId: null, showLogin: false };
   }
   if (clean === '/app/redteam') {
-    return { isLanding: false, module: 'redteam', incidentId: null };
+    return { isLanding: false, module: 'redteam', incidentId: null, showLogin: false };
   }
   if (clean === '/app/candidate' || clean === '/app/governance') {
-    return { isLanding: false, module: 'candidate', incidentId: null };
+    return { isLanding: false, module: 'candidate', incidentId: null, showLogin: false };
   }
   if (clean === '/app/forgelab') {
-    return { isLanding: false, module: 'forgelab', incidentId: null };
+    return { isLanding: false, module: 'forgelab', incidentId: null, showLogin: false };
   }
   if (clean === '/app/memory') {
-    return { isLanding: false, module: 'memory', incidentId: null };
+    return { isLanding: false, module: 'memory', incidentId: null, showLogin: false };
   }
   if (clean.startsWith('/app/incidents/')) {
     const id = clean.replace('/app/incidents/', '');
-    return { isLanding: false, module: 'incidents', incidentId: id || null };
+    return { isLanding: false, module: 'incidents', incidentId: id || null, showLogin: false };
   }
   if (clean === '/app/incidents') {
-    return { isLanding: false, module: 'incidents', incidentId: null };
+    return { isLanding: false, module: 'incidents', incidentId: null, showLogin: false };
   }
   if (clean === '/app/operations') {
-    return { isLanding: false, module: 'operations', incidentId: null };
+    return { isLanding: false, module: 'operations', incidentId: null, showLogin: false };
   }
   if (clean === '/app/policies') {
-    return { isLanding: false, module: 'policies', incidentId: null };
+    return { isLanding: false, module: 'policies', incidentId: null, showLogin: false };
   }
   if (clean === '/app/audit') {
-    return { isLanding: false, module: 'audit', incidentId: null };
+    return { isLanding: false, module: 'audit', incidentId: null, showLogin: false };
   }
   if (clean === '/app/scenarios') {
-    return { isLanding: false, module: 'scenarios', incidentId: null };
+    return { isLanding: false, module: 'scenarios', incidentId: null, showLogin: false };
   }
   if (clean === '/app/risk') {
-    return { isLanding: false, module: 'risk', incidentId: null };
+    return { isLanding: false, module: 'risk', incidentId: null, showLogin: false };
   }
   if (clean === '/app/system') {
-    return { isLanding: false, module: 'system', incidentId: null };
+    return { isLanding: false, module: 'system', incidentId: null, showLogin: false };
   }
   if (clean === '/app' || clean === '/app/home') {
-    return { isLanding: false, module: 'home', incidentId: null };
+    return { isLanding: false, module: 'home', incidentId: null, showLogin: false };
   }
-  return { isLanding: false, module: 'home', incidentId: null };
+  return { isLanding: false, module: 'home', incidentId: null, showLogin: false };
 }
 
 export function App() {
@@ -71,6 +74,7 @@ export function App() {
 
   // Mode: Public Landing Page vs Authenticated Operations Platform
   const [isPublicLanding, setIsPublicLanding] = useState<boolean>(initialRoute.isLanding);
+  const [showSignInModal, setShowSignInModal] = useState<boolean>(initialRoute.showLogin);
 
   // Active Navigation Module in AppShell
   const [activeModule, setActiveModule] = useState<string>(initialRoute.module);
@@ -97,6 +101,7 @@ export function App() {
     }
     const parsed = parseRoute(path);
     setIsPublicLanding(parsed.isLanding);
+    setShowSignInModal(parsed.showLogin);
     setActiveModule(parsed.module);
     if (options && options.incidentId !== undefined) {
       setSelectedIncidentId(options.incidentId);
@@ -110,6 +115,7 @@ export function App() {
     const handlePopState = () => {
       const parsed = parseRoute(window.location.pathname);
       setIsPublicLanding(parsed.isLanding);
+      setShowSignInModal(parsed.showLogin);
       setActiveModule(parsed.module);
       setSelectedIncidentId(parsed.incidentId);
     };
@@ -145,6 +151,11 @@ export function App() {
     return (
       <CinematicLandingView
         onEnterOperations={() => {
+          navigateTo('/app');
+        }}
+        initialShowLogin={showSignInModal}
+        onSignIn={(role) => {
+          if (role) setCurrentRole(role);
           navigateTo('/app');
         }}
       />

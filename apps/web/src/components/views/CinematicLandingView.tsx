@@ -1,11 +1,25 @@
-import React from 'react';
-import { ArrowRight, CheckCircle2, ChevronRight, ShieldCheck, Cpu, Database, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, CheckCircle2, ChevronRight, ShieldCheck, Cpu, Database, Activity, Lock } from 'lucide-react';
+import { SignInModal } from '../auth/SignInModal';
 
 interface CinematicLandingViewProps {
   onEnterOperations: () => void;
+  onSignIn?: (role: 'Operations Lead' | 'VP of Operations' | 'Compliance Officer') => void;
+  initialShowLogin?: boolean;
 }
 
-export const CinematicLandingView: React.FC<CinematicLandingViewProps> = ({ onEnterOperations }) => {
+export const CinematicLandingView: React.FC<CinematicLandingViewProps> = ({ 
+  onEnterOperations, 
+  onSignIn,
+  initialShowLogin = false 
+}) => {
+  const [signInOpen, setSignInOpen] = useState(initialShowLogin);
+
+  useEffect(() => {
+    if (initialShowLogin) {
+      setSignInOpen(true);
+    }
+  }, [initialShowLogin]);
   return (
     <div style={{
       position: 'relative',
@@ -147,6 +161,29 @@ export const CinematicLandingView: React.FC<CinematicLandingViewProps> = ({ onEn
           </span>
 
           <button
+            onClick={() => setSignInOpen(true)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.22)',
+              color: '#ffffff',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              padding: '8px 18px',
+              borderRadius: '999px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Lock size={13} color="#38bdf8" />
+            <span>Sign In</span>
+          </button>
+
+          <button
             onClick={onEnterOperations}
             style={{
               background: 'linear-gradient(135deg, #2563eb, #4f46e5)',
@@ -271,6 +308,31 @@ export const CinematicLandingView: React.FC<CinematicLandingViewProps> = ({ onEn
           </button>
 
           <button
+            onClick={() => setSignInOpen(true)}
+            style={{
+              background: 'rgba(56, 189, 248, 0.16)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              color: '#38bdf8',
+              fontFamily: "'Rowdies', sans-serif",
+              fontSize: '14.5px',
+              fontWeight: 700,
+              padding: '14px 30px',
+              borderRadius: '999px',
+              border: '1px solid rgba(56, 189, 248, 0.45)',
+              boxShadow: '0 0 25px rgba(56, 189, 248, 0.25)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Lock size={16} />
+            <span>Sign In / IAM Access</span>
+          </button>
+
+          <button
             onClick={onEnterOperations}
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
@@ -348,6 +410,20 @@ export const CinematicLandingView: React.FC<CinematicLandingViewProps> = ({ onEn
           <span>FORGE X Platform • Deterministic Decision Governance</span>
         </div>
       </footer>
+
+      {/* Enterprise Sign-In Modal */}
+      <SignInModal
+        isOpen={signInOpen}
+        onClose={() => setSignInOpen(false)}
+        onSignInSuccess={(role) => {
+          setSignInOpen(false);
+          if (onSignIn) {
+            onSignIn(role);
+          } else {
+            onEnterOperations();
+          }
+        }}
+      />
     </div>
   );
 };

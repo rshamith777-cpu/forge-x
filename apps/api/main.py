@@ -986,14 +986,21 @@ async def explain_decision(decision_id: str):
     }
 
 
-# --- FORGE LAB RUNNABLE BENCHMARKS ---
+_cached_lab_report = None
+_cached_lab_timestamp = 0.0
 
 @app.post("/api/lab/run-tests")
-async def run_lab_evaluation():
+async def run_lab_evaluation(fresh: bool = False):
     """
     Executes all 6 empirical benchmark gates and returns transparent, honest results
     with full benchmark provenance disclosures.
     """
+    global _cached_lab_report, _cached_lab_timestamp
+    import time
+    now = time.time()
+    if not fresh and _cached_lab_report is not None and (now - _cached_lab_timestamp < 300):
+        return _cached_lab_report
+
     from packages.evaluation.harness import EvaluationHarness
     harness = EvaluationHarness()
     report = await harness.run_full_evaluation(DATA_DIR)
@@ -1064,13 +1071,16 @@ async def run_lab_evaluation():
         },
     ]
 
-    return {
+    payload = {
         "timestamp": report.timestamp,
         "overall_status": "ALL PERFORMANCE & INTEGRITY GATES PASSED",
         "benchmark_provenance": "All tests run against seeded benchmark / synthetic enterprise environment",
         "tests": test_cards,
         "retrieval_fabric": dual_retrieval,
     }
+    _cached_lab_report = payload
+    _cached_lab_timestamp = now
+    return payload
 
 
 # --- KNOWLEDGE HEALTH & DECAY ENDPOINTS ---

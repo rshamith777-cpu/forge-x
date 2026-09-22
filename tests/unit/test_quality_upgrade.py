@@ -114,6 +114,7 @@ def test_temporal_isolation_enforcement():
 
 # --- 5. Candidate V2 Quarantine ---
 def test_candidate_v2_quarantined_by_default():
+    load_dataset()
     active_pb = org_memory.get_active_playbook()
     assert active_pb is not None
     assert active_pb.version.startswith("1")

@@ -17,6 +17,17 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
   const [activeTab, setActiveTab] = useState<'matrix' | 'narrative' | 'cases' | 'diff'>('matrix');
   const [caseFilter, setCaseFilter] = useState<'all' | 'v1_breached' | 'v2_blocked' | 'v2_evaded'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedBotCase, setSelectedBotCase] = useState<any>(null);
+
+  const scrollToTraces = () => {
+    setActiveTab('cases');
+    setTimeout(() => {
+      const el = document.getElementById('bot-traces-panel');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+  };
 
   const loadData = async () => {
     try {
@@ -225,20 +236,25 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
 
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button
-              onClick={() => setActiveTab('cases')}
+              onClick={scrollToTraces}
               style={{
-                background: 'rgba(255, 255, 255, 0.10)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(168, 85, 247, 0.25)',
+                border: '1px solid rgba(168, 85, 247, 0.5)',
                 borderRadius: '8px',
                 padding: '9px 16px',
                 color: '#ffffff',
                 fontSize: '12.5px',
-                fontWeight: 600,
+                fontWeight: 700,
                 cursor: 'pointer',
-                fontFamily: "'Rowdies', sans-serif"
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontFamily: "'Rowdies', sans-serif",
+                boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)'
               }}
             >
-              View 100 Bot Traces
+              <Terminal size={14} color="#d8b4fe" />
+              <span>View 100 Bot Traces</span>
             </button>
             <button
               onClick={() => onNavigate('candidate')}
@@ -382,6 +398,28 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
           <div style={{ fontSize: '12px', color: '#6ee7b7', lineHeight: '1.4' }}>
             <strong>EVALUATION VERDICT:</strong> Failure converted into verified institutional memory. Ready for Human Operations approval in FORGE LAB.
           </div>
+
+          <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+            <button
+              onClick={scrollToTraces}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                background: 'rgba(168, 85, 247, 0.2)',
+                border: '1px solid rgba(168, 85, 247, 0.4)',
+                color: '#d8b4fe',
+                fontSize: '11.5px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: "'Rowdies', sans-serif"
+              }}
+            >
+              <Terminal size={12} /> View 100 Bot Traces <ArrowRight size={11} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -464,7 +502,7 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
           Learning Loop Steps (6)
         </button>
         <button 
-          onClick={() => setActiveTab('cases')}
+          onClick={scrollToTraces}
           style={{
             padding: '9px 18px',
             borderRadius: '8px',
@@ -690,20 +728,37 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
 
       {/* TAB 2: Bot Cases Trace */}
       {activeTab === 'cases' && (
-        <div className="glass-panel" style={{ padding: '24px', background: 'rgba(8, 14, 26, 0.65)', backdropFilter: 'blur(16px)' }}>
+        <div 
+          id="bot-traces-panel" 
+          className="glass-panel" 
+          style={{ 
+            padding: '24px', 
+            background: 'rgba(8, 14, 26, 0.75)', 
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(168, 85, 247, 0.45)',
+            boxShadow: '0 0 35px rgba(168, 85, 247, 0.15)',
+            scrollMarginTop: '80px'
+          }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Terminal size={18} color="#a855f7" />
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>
-                Sybil Attack Injection Traces ({filteredCases.length} of {sampleCases.length} Bots Shown)
-              </h3>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Terminal size={18} color="#a855f7" />
+                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff', margin: 0 }}>
+                  Sybil Attack Injection Traces ({filteredCases.length} of {sampleCases.length} Bots Shown)
+                </h3>
+                <span className="badge badge-indigo" style={{ fontSize: '10px' }}>100 BOTS LOGGED</span>
+              </div>
+              <p style={{ fontSize: '11.5px', color: '#94a3b8', margin: '4px 0 0 0' }}>
+                Click any bot trace below to inspect the full execution trace, subnet entropy, and velocity rule interception.
+              </p>
             </div>
 
             {/* Filter pills & search */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {[
-                  { id: 'all', label: 'All Bots' },
+                  { id: 'all', label: 'All Bots (100)' },
                   { id: 'v1_breached', label: 'V1 Breached (67)' },
                   { id: 'v2_blocked', label: 'V2 Intercepted (94)' },
                   { id: 'v2_evaded', label: 'V2 Edge Evasions (6)' },
@@ -775,35 +830,133 @@ export const RedTeamView: React.FC<{ onNavigate: (tab: string) => void }> = ({ o
             <span>V2 INTERCEPTION</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '480px', overflowY: 'auto', marginTop: '6px' }}>
-            {filteredCases.map((c: any, idx: number) => (
-              <div key={idx} style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '110px 140px 90px 100px 1fr 1fr', 
-                alignItems: 'center',
-                padding: '9px 14px', 
-                background: 'rgba(0,0,0,0.3)', 
-                borderRadius: '6px',
-                border: c.v2_breached ? '1px solid rgba(244, 63, 94, 0.35)' : '1px solid rgba(255, 255, 255, 0.05)',
-                fontSize: '12px'
-              }}>
-                <span className="font-mono" style={{ color: '#fff', fontWeight: 600 }}>{c.synthetic_id}</span>
-                <span style={{ color: '#94a3b8', fontFamily: "'JetBrains Mono', monospace", fontSize: '11.5px' }}>{c.ip_subnet}</span>
-                <span className="font-mono" style={{ color: '#38bdf8' }}>${c.claimed_amount}</span>
-                <span style={{ color: '#94a3b8', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px' }}>T+{c.arrival_offset_seconds}s</span>
-                <div>
-                  <span className={`badge ${c.v1_breached ? 'badge-rose' : 'badge-emerald'}`} style={{ fontSize: '11px' }}>
-                    {c.v1_action}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '440px', overflowY: 'auto', marginTop: '6px' }}>
+            {filteredCases.map((c: any, idx: number) => {
+              const isSelected = selectedBotCase?.synthetic_id === c.synthetic_id;
+              return (
+                <div 
+                  key={idx} 
+                  onClick={() => setSelectedBotCase(isSelected ? null : c)}
+                  style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: '110px 140px 90px 100px 1fr 1fr', 
+                    alignItems: 'center',
+                    padding: '9px 14px', 
+                    background: isSelected ? 'rgba(168, 85, 247, 0.25)' : 'rgba(0,0,0,0.3)', 
+                    borderRadius: '6px',
+                    border: isSelected 
+                      ? '1px solid #c084fc' 
+                      : c.v2_breached 
+                        ? '1px solid rgba(244, 63, 94, 0.35)' 
+                        : '1px solid rgba(255, 255, 255, 0.05)',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span className="font-mono" style={{ color: '#fff', fontWeight: 600 }}>{c.synthetic_id}</span>
+                  <span style={{ color: '#94a3b8', fontFamily: "'JetBrains Mono', monospace", fontSize: '11.5px' }}>{c.ip_subnet}</span>
+                  <span className="font-mono" style={{ color: '#38bdf8' }}>${c.claimed_amount}</span>
+                  <span style={{ color: '#94a3b8', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px' }}>T+{c.arrival_offset_seconds}s</span>
+                  <div>
+                    <span className={`badge ${c.v1_breached ? 'badge-rose' : 'badge-emerald'}`} style={{ fontSize: '11px' }}>
+                      {c.v1_action}
+                    </span>
+                  </div>
+                  <div>
+                    <span className={`badge ${c.v2_breached ? 'badge-rose' : 'badge-emerald'}`} style={{ fontSize: '11px' }}>
+                      {c.v2_action}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Selected Bot Trace Detail Inspector */}
+          {selectedBotCase && (
+            <div style={{
+              marginTop: '16px',
+              padding: '18px 22px',
+              borderRadius: '8px',
+              background: 'linear-gradient(180deg, rgba(88, 28, 135, 0.25) 0%, rgba(15, 23, 42, 0.9) 100%)',
+              border: '1px solid rgba(192, 132, 252, 0.45)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Terminal size={18} color="#c084fc" />
+                  <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>
+                    TRACE INSPECTION: {selectedBotCase.synthetic_id}
+                  </span>
+                  <span className={`badge ${selectedBotCase.v2_breached ? 'badge-rose' : 'badge-emerald'}`}>
+                    {selectedBotCase.v2_breached ? 'V2 EVADED' : 'V2 INTERCEPTED'}
                   </span>
                 </div>
-                <div>
-                  <span className={`badge ${c.v2_breached ? 'badge-rose' : 'badge-emerald'}`} style={{ fontSize: '11px' }}>
-                    {c.v2_action}
-                  </span>
+                <button
+                  onClick={() => setSelectedBotCase(null)}
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '4px',
+                    color: '#e2e8f0',
+                    padding: '3px 10px',
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close Inspection
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '14px' }}>
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>IP SUBNET & ENTROPY</div>
+                  <div style={{ fontSize: '13px', color: '#38bdf8', fontFamily: 'monospace', fontWeight: 700 }}>
+                    {selectedBotCase.ip_subnet} (entropy: {selectedBotCase.cluster_entropy})
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>CLAIMED EXPLOIT AMOUNT</div>
+                  <div style={{ fontSize: '13px', color: '#fbbf24', fontFamily: 'monospace', fontWeight: 800 }}>
+                    ${selectedBotCase.claimed_amount} USD
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>ARRIVAL TIMING OFFSET</div>
+                  <div style={{ fontSize: '13px', color: '#34d399', fontFamily: 'monospace', fontWeight: 700 }}>
+                    T+{selectedBotCase.arrival_offset_seconds}s
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div style={{ background: 'rgba(244, 63, 94, 0.1)', padding: '12px', borderRadius: '6px', border: '1px solid rgba(244, 63, 94, 0.3)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#f87171', marginBottom: '4px' }}>
+                    PLAYBOOK V1 OUTCOME:
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#fca5a5' }}>
+                    <strong>Action:</strong> {selectedBotCase.v1_action}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '6px', lineHeight: 1.4 }}>
+                    V1 relied only on static rule <code>amount &lt; $500</code>. Because claim was ${selectedBotCase.claimed_amount}, V1 auto-refunded without velocity cluster checks!
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '12px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#34d399', marginBottom: '4px' }}>
+                    CANDIDATE PLAYBOOK V2 OUTCOME:
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#86efac' }}>
+                    <strong>Action:</strong> {selectedBotCase.v2_action}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '6px', lineHeight: 1.4 }}>
+                    V2 evaluated compound rule <code>EXC-FRAUD-SYBIL</code> (cluster entropy {selectedBotCase.cluster_entropy} &lt; 0.45). Bot halted and redirected to fraud investigation queue.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
