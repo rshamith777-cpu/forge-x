@@ -17,8 +17,12 @@ import {
   getDemoTimeMachineSnapshot,
   DEMO_MEMORY_SUMMARY,
   DEMO_RELIABILITY_SUMMARY,
-  DEMO_KNOWLEDGE_HEALTH
+  DEMO_KNOWLEDGE_HEALTH,
+  DEMO_ENTERPRISE_INCIDENTS,
+  DEMO_RED_TEAM_SCENARIOS
 } from './demoData';
+
+let localIncidents = [...DEMO_ENTERPRISE_INCIDENTS];
 
 function resolveApiBase(): string {
   if (import.meta.env.VITE_API_URL) {
@@ -316,10 +320,7 @@ export async function fetchRedTeamScenarios(): Promise<any> {
     console.info("Failed fetching backend scenarios, using fallback:", e);
   }
   return {
-    scenarios: [
-      { attack_id: "ATK-01", attack_name: "Sybil Burst Refund Attack", category: "FRAUD", status: "SIMULATED", attack_vector: "API" },
-      { attack_id: "ATK-02", attack_name: "VIP Context Drift", category: "CONTEXT", status: "PENDING", attack_vector: "UX" }
-    ]
+    scenarios: DEMO_RED_TEAM_SCENARIOS
   };
 }
 
@@ -474,14 +475,25 @@ export async function fetchIncidents(params?: { status?: string; priority?: stri
     console.info("Failed fetching backend incidents, using fallback", e);
   }
 
+  let results = [...localIncidents];
+  if (params?.status && params.status.toLowerCase() !== 'all') {
+    results = results.filter(i => (i.status || '').toLowerCase() === params.status!.toLowerCase());
+  }
+  if (params?.priority && params.priority.toLowerCase() !== 'all') {
+    results = results.filter(i => (i.priority || '').toLowerCase() === params.priority!.toLowerCase());
+  }
+  if (params?.search) {
+    const q = params.search.toLowerCase();
+    results = results.filter(i => 
+      (i.id || '').toLowerCase().includes(q) ||
+      (i.customer || '').toLowerCase().includes(q) ||
+      (i.policy_id || '').toLowerCase().includes(q)
+    );
+  }
+
   return {
-    incidents: [
-      { id: 'INC-101', customer: 'ApexCloud', tier: 'Enterprise', status: 'Open', priority: 'CRITICAL', claimed_amount: 750, duration_hours: 2.5, sla_breach: true },
-      { id: 'INC-102', customer: 'TechFlow', tier: 'Pro', status: 'Resolved', priority: 'HIGH', claimed_amount: 150, duration_hours: 0.5, sla_breach: false },
-      { id: 'INC-103', customer: 'DataCorp Global', tier: 'Enterprise', status: 'In Review', priority: 'HIGH', claimed_amount: 1200, duration_hours: 1.8, sla_breach: false },
-      { id: 'INC-104', customer: 'CloudPulse', tier: 'Starter', status: 'Resolved', priority: 'MEDIUM', claimed_amount: 80, duration_hours: 0.2, sla_breach: false }
-    ],
-    total: 4
+    incidents: results,
+    total: results.length
   };
 }
 
@@ -492,16 +504,19 @@ export async function fetchIncidentDetail(incidentId: string): Promise<any> {
   } catch (e) {
     console.info("Failed fetching incident detail, using fallback", e);
   }
-  return {
+  const inc = localIncidents.find(i => (i.id || '').toLowerCase() === (incidentId || '').toLowerCase());
+  if (inc) return inc;
+  return localIncidents[0] || {
     id: incidentId,
     customer: 'ApexCloud',
     tier: 'Enterprise',
     status: 'Open',
     priority: 'CRITICAL',
     claimed_amount: 750,
+    recommended_credit: 750,
     duration_hours: 2.5,
-    sla_breach: true,
-    affected_services: ['API Gateway', 'Auth Service', 'Multi-AZ Shard']
+    sla_status: 'BREACHED',
+    affected_services: ['API Gateway', 'Auth Service']
   };
 }
 
@@ -526,14 +541,41 @@ export async function createIncident(data: {
   } catch (e) {
     console.info("Fallback create incident:", e);
   }
+
+  const newId = `INC-${1050 + localIncidents.length}`;
+  const amount = data.claimed_amount || 500;
+  const isStarter = data.tier === 'starter';
+  const recCredit = (isStarter && amount > 200) ? 200 : amount;
+  const dur = data.duration_hours || 2.0;
+
+  const newInc = {
+    id: newId,
+    customer: data.customer,
+    tier: data.tier || 'enterprise',
+    mrr: data.mrr || 45000,
+    impact: data.impact || 'Service Disruption',
+    affected_services: data.affected_services || ['API Gateway'],
+    duration_hours: dur,
+    sla_status: dur > 3.0 ? 'BREACHED' : (dur > 1.5 ? 'AT RISK' : 'WITHIN SLA'),
+    sla_target_hours: data.tier === 'enterprise' ? 2.0 : 4.0,
+    claimed_amount: amount,
+    recommended_credit: recCredit,
+    owner: data.owner || 'Ananya R.',
+    status: 'Open',
+    priority: data.priority || 'HIGH',
+    updated_at: 'Just now',
+    policy_id: (isStarter && amount > 200) ? 'POL-OPS-003' : 'POL-OPS-012',
+    policy_title: 'Refund & Credit Authorization Limits',
+    authority_required: recCredit > 1000 ? 'Manager Approval Required (> $1,000)' : 'Automated Rule Clearance (< $500)',
+    precedents_count: 6,
+    evidence_ids: ['EV-TRACE-8841'],
+    reason: `Claim of $${amount} submitted for ${data.customer}.`
+  };
+
+  localIncidents.unshift(newInc);
   return {
     status: "created",
-    incident: {
-      id: "INC-" + Math.floor(Math.random() * 9000 + 1000),
-      ...data,
-      status: "Open",
-      created_at: new Date().toISOString()
-    }
+    incident: newInc
   };
 }
 
@@ -552,12 +594,35 @@ export async function resolveIncident(incidentId: string, data: {
   } catch (e) {
     console.info("Fallback resolve incident:", e);
   }
+
+  const inc = localIncidents.find(i => (i.id || '').toLowerCase() === (incidentId || '').toLowerCase()) || localIncidents[0];
+  if (inc) {
+    inc.status = 'Resolved';
+    inc.updated_at = 'Just now';
+  }
+
+  const finalAmount = data.approved_amount ?? inc.recommended_credit ?? inc.claimed_amount ?? 500;
+  const voucher = {
+    voucher_reference: `VCH-2026-X${Math.floor(Math.random() * 90000 + 10000)}`,
+    incident_id: inc.id,
+    customer: inc.customer,
+    account_tier: inc.tier,
+    approved_amount: finalAmount,
+    governing_policy: inc.policy_id || 'POL-OPS-012',
+    authority_level: inc.authority_required || 'Manager Approval Required',
+    approver: data.approver || 'Ananya R. (Operations Lead)',
+    timestamp: new Date().toUTCString(),
+    evidence_reference: inc.evidence_ids?.[0] || 'EV-TRACE-8841',
+    audit_reference: `AUD-${Math.floor(Math.random() * 900000 + 100000)}`,
+    notes: data.notes || 'Approved in accordance with SLA compensation limits.',
+    status: 'APPROVED',
+    environment: 'PRODUCTION ENFORCED • SYNTHETIC ENTERPRISE AUDIT TRAIL'
+  };
+
   return {
-    status: "resolved",
-    incident_id: incidentId,
-    resolved_by: data.approver || "Operations Director",
-    credit_amount: data.approved_amount || 0,
-    timestamp: new Date().toISOString()
+    status: "success",
+    incident: inc,
+    voucher: voucher
   };
 }
 

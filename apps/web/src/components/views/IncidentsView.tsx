@@ -76,7 +76,7 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
       setShowNewModal(false);
       setNewCustomer('');
       await loadIncidents();
-      setSelectedIncident(created);
+      setSelectedIncident(created?.incident || created);
     } catch (err) {
       console.error("Error creating incident", err);
     } finally {
@@ -89,12 +89,12 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
     try {
       const res = await resolveIncident(incidentId, {
         approver: 'Ananya R. (Operations Lead)',
-        approved_amount: selectedIncident.recommended_credit,
-        notes: `Approved in accordance with ${selectedIncident.policy_id}`
+        approved_amount: selectedIncident.recommended_credit ?? selectedIncident.claimed_amount ?? 500,
+        notes: `Approved in accordance with ${selectedIncident.policy_id || 'POL-OPS-012'}`
       });
       if (res?.voucher) {
         setVoucherModal(res.voucher);
-        setSelectedIncident(res.incident);
+        setSelectedIncident(res.incident || { ...selectedIncident, status: 'Resolved' });
         loadIncidents();
       }
     } catch (err) {
@@ -276,7 +276,7 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
                       </span>
                     </td>
                     <td style={{ padding: '14px 18px', fontWeight: 600, color: '#34d399' }}>
-                      ${inc.recommended_credit.toLocaleString()}
+                      ${(inc.recommended_credit ?? inc.claimed_amount ?? 0).toLocaleString()}
                     </td>
                     <td style={{ padding: '14px 18px', color: '#94a3b8' }}>
                       {inc.owner}
@@ -376,14 +376,14 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
                 <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                   <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>ACCOUNT TIER & MRR</div>
                   <div style={{ fontSize: '14.5px', fontWeight: 600, color: '#ffffff', marginTop: '4px' }}>
-                    {selectedIncident.tier.toUpperCase()} • ${(selectedIncident.mrr || 45000).toLocaleString()}/mo
+                    {(selectedIncident.tier || 'enterprise').toUpperCase()} • ${(selectedIncident.mrr || 45000).toLocaleString()}/mo
                   </div>
                 </div>
 
                 <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                   <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>CLAIMED AMOUNT</div>
                   <div style={{ fontSize: '14.5px', fontWeight: 600, color: '#38bdf8', marginTop: '4px' }}>
-                    ${selectedIncident.claimed_amount.toLocaleString()}
+                    ${(selectedIncident.claimed_amount ?? 0).toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -400,7 +400,7 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
                   POLICY-RECOMMENDED SETTLEMENT
                 </div>
                 <div style={{ fontSize: '24px', fontWeight: 700, color: '#34d399', marginBottom: '6px' }}>
-                  ${selectedIncident.recommended_credit.toLocaleString()} Credit
+                  ${(selectedIncident.recommended_credit ?? selectedIncident.claimed_amount ?? 0).toLocaleString()} Credit
                 </div>
                 <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '10px' }}>
                   {selectedIncident.reason}
@@ -434,7 +434,7 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12.5px', color: '#cbd5e1' }}>
-                  <div>• <strong>Customer Tier:</strong> {selectedIncident.tier.toUpperCase()} receives priority fast-track SLA response.</div>
+                  <div>• <strong>Customer Tier:</strong> {(selectedIncident.tier || 'enterprise').toUpperCase()} receives priority fast-track SLA response.</div>
                   <div>• <strong>Service Disruption:</strong> {selectedIncident.duration_hours}h exceeds the 2.0h contract SLA limit.</div>
                   <div>• <strong>Authority Cap:</strong> Evaluated under Tier 2 management authority limits.</div>
                   <div>• <strong>Precedents:</strong> Matches {selectedIncident.precedents_count || 7} verified historical resolution cases.</div>
