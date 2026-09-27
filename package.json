@@ -1,0 +1,11 @@
+{
+  "name": "forge-x",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FORGE X — Organizational Intelligence Compiler",
+  "scripts": {
+    "build": "npm run build --prefix apps/web",
+    "dev": "npm run dev --prefix apps/web",
+    "preview": "npm run preview --prefix apps/web"
+  }
+}
