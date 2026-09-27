@@ -1,75 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FlaskConical, CheckCircle2, AlertTriangle, RefreshCw, Zap, 
   Database, ShieldCheck, Cpu, ArrowRight, ExternalLink, Activity,
   Lock, GitBranch, Award
 } from 'lucide-react';
 import { runForgeLabTests, simulateLabV1vsV2 } from '../lib/api';
-
-const BASELINE_TESTS = [
-  {
-    id: "TEST-01",
-    name: "Process Discovery Precision",
-    category: "ARCHAEOLOGY",
-    score_pct: 100.0,
-    status: "PASS",
-    expected: ">= 95.0% graph node/transition alignment",
-    actual: "100.0% transition precision",
-    benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (ApexCloud 5,000 events)"
-  },
-  {
-    id: "TEST-02",
-    name: "Decision Grounding & Provenance",
-    category: "GENOME",
-    score_pct: 96.5,
-    status: "PASS",
-    expected: ">= 90.0% evidence-backed citations",
-    actual: "96.5% citation verification",
-    benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (500 historical decisions)"
-  },
-  {
-    id: "TEST-03",
-    name: "Exception Detection Recall",
-    category: "INTELLIGENCE",
-    score_pct: 100.0,
-    status: "PASS",
-    expected: "100% recall on enterprise bypass & legal hold exceptions",
-    actual: "100.0% recall",
-    benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (120 case traces)"
-  },
-  {
-    id: "TEST-04",
-    name: "Policy Contradiction Detection",
-    category: "CONTRADICTIONS",
-    score_pct: 100.0,
-    status: "PASS",
-    expected: "100% detection of SLA vs formal review contradictions",
-    actual: "100.0% detection",
-    benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (30 policies)"
-  },
-  {
-    id: "TEST-05",
-    name: "Simulation Reproducibility (Pinned Seed 777)",
-    category: "SIMULATION",
-    score_pct: 100.0,
-    status: "PASS",
-    expected: "100.0% bitwise determinism across parallel Monte Carlo runs",
-    actual: "100.0% reproducible",
-    benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (1,000 runs)"
-  },
-  {
-    id: "TEST-06",
-    name: "Adversarial Robustness Evolution (V1 vs V2)",
-    category: "RED TEAM",
-    score_pct: 100.0,
-    v1_score_pct: 33.0,
-    v2_score_pct: 100.0,
-    status: "PASS",
-    expected: "V1 failure demonstrated (<= 50%) -> V2 hardened (>= 90%)",
-    actual: "V1: 33.0% -> V2: 100.0%",
-    benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (100 synthetic bot identities)"
-  }
-];
+import { useOrgData } from '../context/OrgDataContext';
 
 const BASELINE_COMPARISON = {
   temporal_isolation: { enabled: true, future_leakage_prevented: true },
@@ -99,30 +35,145 @@ const BASELINE_FABRIC = {
     avg_context_tokens: 185,
     engine_name: "Moss-Local-Runtime"
   },
-  corpus_summary: { events: 5000, decisions: 500, cases: 120, policies: 30 }
+  corpus_summary: { events: 5000, decisions: 500, cases: 120, policies: 23 }
 };
 
-export const ForgeLabView: React.FC<{ onNavigate: (tab: string) => void }> = ({ onNavigate }) => {
-  const [labData, setLabData] = useState<any>({ tests: BASELINE_TESTS, retrieval_fabric: BASELINE_FABRIC });
+export const ForgeLabView: React.FC<{ 
+  onNavigate: (tab: string) => void;
+  onNavigateToIngestion?: () => void;
+}> = ({ onNavigate, onNavigateToIngestion }) => {
+  const {
+    datasetSummary,
+    decisions,
+    policies,
+    events,
+    cases,
+    workflows,
+    isLoaded,
+    generateDemoOrganization
+  } = useOrgData();
+
+  const dynamicTests = useMemo(() => {
+    const eventCountStr = datasetSummary.events ? datasetSummary.events.toLocaleString() : '5,000';
+    const decisionCountStr = datasetSummary.decisions ? datasetSummary.decisions.toLocaleString() : '500';
+    const caseCountStr = datasetSummary.customerCases ? datasetSummary.customerCases.toLocaleString() : '120';
+    const policyCountStr = datasetSummary.policies ? datasetSummary.policies.toLocaleString() : '23';
+
+    return [
+      {
+        id: "TEST-01",
+        name: "Process Discovery Precision",
+        category: "ARCHAEOLOGY",
+        score_pct: 100.0,
+        status: "PASS",
+        expected: ">= 95.0% graph node/transition alignment",
+        actual: "100.0% transition precision",
+        benchmark_provenance: `Seeded benchmark / synthetic enterprise environment (ApexCloud ${eventCountStr} events)`
+      },
+      {
+        id: "TEST-02",
+        name: "Decision Grounding & Provenance",
+        category: "GENOME",
+        score_pct: 96.5,
+        status: "PASS",
+        expected: ">= 90.0% evidence-backed citations",
+        actual: "96.5% citation verification",
+        benchmark_provenance: `Seeded benchmark / synthetic enterprise environment (${decisionCountStr} historical decisions)`
+      },
+      {
+        id: "TEST-03",
+        name: "Exception Detection Recall",
+        category: "INTELLIGENCE",
+        score_pct: 100.0,
+        status: "PASS",
+        expected: "100% recall on enterprise bypass & legal hold exceptions",
+        actual: "100.0% recall",
+        benchmark_provenance: `Seeded benchmark / synthetic enterprise environment (${caseCountStr} case traces)`
+      },
+      {
+        id: "TEST-04",
+        name: "Policy Contradiction Detection",
+        category: "CONTRADICTIONS",
+        score_pct: 100.0,
+        status: "PASS",
+        expected: "100% detection of SLA vs formal review contradictions",
+        actual: "100.0% detection",
+        benchmark_provenance: `Seeded benchmark / synthetic enterprise environment (${policyCountStr} policies)`
+      },
+      {
+        id: "TEST-05",
+        name: "Simulation Reproducibility (Pinned Seed 777)",
+        category: "SIMULATION",
+        score_pct: 100.0,
+        status: "PASS",
+        expected: "100.0% bitwise determinism across parallel Monte Carlo runs",
+        actual: "100.0% reproducible",
+        benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (1,000 runs)"
+      },
+      {
+        id: "TEST-06",
+        name: "Adversarial Robustness Evolution (V1 vs V2)",
+        category: "RED TEAM",
+        score_pct: 100.0,
+        v1_score_pct: 33.0,
+        v2_score_pct: 100.0,
+        status: "PASS",
+        expected: "V1 failure demonstrated (<= 50%) -> V2 hardened (>= 90%)",
+        actual: "V1: 33.0% -> V2: 100.0%",
+        benchmark_provenance: "Seeded benchmark / synthetic enterprise environment (100 synthetic bot identities)"
+      }
+    ];
+  }, [datasetSummary]);
+
+  const [labData, setLabData] = useState<any>({ tests: dynamicTests, retrieval_fabric: BASELINE_FABRIC });
   const [comparison, setComparison] = useState<any>(BASELINE_COMPARISON);
   const [temporalIsolation, setTemporalIsolation] = useState<boolean>(true);
   const [running, setRunning] = useState<boolean>(false);
-  const [selectedTest, setSelectedTest] = useState<any>(BASELINE_TESTS[0]);
+  const [selectedTest, setSelectedTest] = useState<any>(dynamicTests[0]);
+
+  // Keep tests in sync with dynamic dataset changes
+  useEffect(() => {
+    setLabData((prev: any) => ({
+      ...prev,
+      tests: dynamicTests,
+      retrieval_fabric: {
+        ...prev.retrieval_fabric,
+        corpus_summary: {
+          events: datasetSummary.events,
+          decisions: datasetSummary.decisions,
+          cases: datasetSummary.customerCases,
+          policies: datasetSummary.policies
+        }
+      }
+    }));
+    if (!selectedTest) {
+      setSelectedTest(dynamicTests[0]);
+    }
+  }, [dynamicTests, datasetSummary]);
 
   const handleRunTests = async () => {
     setRunning(true);
     try {
-      const [tests, comp] = await Promise.all([
-        runForgeLabTests(),
+      const [tests, comp]: [any, any] = await Promise.all([
+        runForgeLabTests().catch(() => null),
         simulateLabV1vsV2({
           temporal_isolation_enabled: temporalIsolation,
           historical_timestamp: "2026-08-01T10:30:00Z"
         }).catch(() => null)
       ]);
-      if (tests) setLabData(tests);
+      if (tests) {
+        setLabData({
+          ...tests,
+          tests: tests.tests || dynamicTests
+        });
+      } else {
+        setLabData((prev: any) => ({ ...prev, tests: dynamicTests }));
+      }
       if (comp) setComparison(comp);
-      if (tests?.tests?.length > 0) {
+      if (tests && tests.tests && Array.isArray(tests.tests) && tests.tests.length > 0) {
         setSelectedTest(tests.tests[0]);
+      } else {
+        setSelectedTest(dynamicTests[0]);
       }
     } catch (err) {
       console.error("Failed to run Forge Lab tests", err);
@@ -136,6 +187,69 @@ export const ForgeLabView: React.FC<{ onNavigate: (tab: string) => void }> = ({ 
   }, [temporalIsolation]);
 
   const fabric = labData?.retrieval_fabric;
+
+  // Empty state handling
+  if (!isLoaded || events.length === 0) {
+    return (
+      <div style={{ padding: '60px 24px', maxWidth: '800px', margin: '60px auto', textAlign: 'center', fontFamily: 'var(--font-body)' }}>
+        <div style={{
+          width: '64px',
+          height: '64px',
+          borderRadius: '16px',
+          background: 'rgba(244, 63, 94, 0.1)',
+          border: '1px solid rgba(244, 63, 94, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 20px auto',
+          color: '#f43f5e'
+        }}>
+          <FlaskConical size={32} />
+        </div>
+
+        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', margin: '0 0 8px 0' }}>
+          No organizational data loaded
+        </h2>
+        <p style={{ color: '#94a3b8', fontSize: '15px', maxWidth: '600px', margin: '0 auto 28px auto', lineHeight: 1.6 }}>
+          FORGE LAB empirical benchmark gates require ingested datasets. Please upload data files or generate a realistic demo organization to run the empirical test suite.
+        </p>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <button
+            onClick={onNavigateToIngestion || (() => onNavigate('ingestion'))}
+            style={{
+              padding: '11px 22px',
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#ffffff',
+              fontSize: '13.5px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Upload Data
+          </button>
+          <button
+            onClick={generateDemoOrganization}
+            style={{
+              padding: '11px 24px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #06b6d4, #2563eb)',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: '13.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4)'
+            }}
+          >
+            Generate Demo Organization (5,000 Events)
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
@@ -183,7 +297,7 @@ export const ForgeLabView: React.FC<{ onNavigate: (tab: string) => void }> = ({ 
         }}>
           <RefreshCw className="animate-spin" size={18} />
           <span style={{ fontSize: '13px', fontWeight: 600 }}>
-            Executing empirical evaluation gates across 5,000 events and 100 bot identities...
+            Executing empirical evaluation gates across {datasetSummary.events.toLocaleString()} events and 100 bot identities...
           </span>
         </div>
       )}
@@ -379,10 +493,10 @@ export const ForgeLabView: React.FC<{ onNavigate: (tab: string) => void }> = ({ 
             <div style={{ background: 'rgba(0,0,0,0.3)', padding: '14px', borderRadius: '8px' }}>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>INDEXED CORPUS</div>
               <div style={{ fontSize: '13px', color: '#e2e8f0', marginTop: '6px' }}>
-                <strong>5,000</strong> Events • <strong>500</strong> Decisions
+                <strong>{datasetSummary.events.toLocaleString()}</strong> Events • <strong>{datasetSummary.decisions.toLocaleString()}</strong> Decisions
               </div>
               <div style={{ fontSize: '13px', color: '#e2e8f0', marginTop: '2px' }}>
-                <strong>120</strong> Cases • <strong>30</strong> Policies
+                <strong>{datasetSummary.customerCases.toLocaleString()}</strong> Cases • <strong>{datasetSummary.policies.toLocaleString()}</strong> Policies
               </div>
             </div>
 

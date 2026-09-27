@@ -1,42 +1,11 @@
 import React, { useState } from 'react';
-
-interface GraphNode {
-  id: string;
-  label: string;
-  type: 'person' | 'policy' | 'event' | 'decision' | 'system' | 'evidence';
-  x: number;
-  y: number;
-  details: string;
-  provenance: string;
-}
-
-interface GraphEdge {
-  source: string;
-  target: string;
-  label: string;
-}
-
-const NODES: GraphNode[] = [
-  { id: 'usr_01', label: 'Sarah Chen (Staff Lead)', type: 'person', x: 120, y: 180, details: 'Customer Engineering Staff Lead with tacit bypass discretion.', provenance: 'Slack war room logs' },
-  { id: 'pol_01', label: 'POL-OPS-012 (Refund Policy)', type: 'policy', x: 400, y: 80, details: 'Documented rule mandating 48h manager review for refunds > $500.', provenance: 'Confluence SOP Handbook v1.2' },
-  { id: 'dec_01', label: 'DEC-0012: Direct Fast-Track Credit', type: 'decision', x: 380, y: 260, details: 'Approved $750 credit to prevent enterprise customer churn.', provenance: 'GENOME-APEX-BILLING-001' },
-  { id: 'sys_01', label: 'Stripe Billing System', type: 'system', x: 680, y: 320, details: 'Payment gateway executing live credits and refunds.', provenance: 'Stripe webhook telemetry' },
-  { id: 'sys_02', label: 'Zendesk Ticketing', type: 'system', x: 120, y: 380, details: 'Official support portal where tickets originate.', provenance: 'Ticket ID: TICK-402' },
-  { id: 'evi_01', label: 'EVID-001: VP Slack Authority', type: 'evidence', x: 420, y: 440, details: 'Prior VP message establishing fast-track credit authority.', provenance: '#incidents-war-room (Slack)' },
-  { id: 'evt_01', label: 'Shard Latency Outage', type: 'event', x: 680, y: 140, details: 'Multi-region shard disruption affecting Enterprise tier accounts.', provenance: 'Datadog incident INC-882' },
-];
-
-const EDGES: GraphEdge[] = [
-  { source: 'usr_01', target: 'dec_01', label: 'executed_by' },
-  { source: 'pol_01', target: 'dec_01', label: 'governed_by' },
-  { source: 'dec_01', target: 'sys_01', label: 'applied_in' },
-  { source: 'evt_01', target: 'dec_01', label: 'caused_by' },
-  { source: 'evi_01', target: 'dec_01', label: 'justified_by' },
-  { source: 'sys_02', target: 'usr_01', label: 'routed_to' },
-];
+import { useOrgData } from '../context/OrgDataContext';
 
 export const OrganizationalGraphView: React.FC = () => {
-  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(NODES[2]);
+  const { twinNodes, twinEdges, isLoaded } = useOrgData();
+  const [selectedNodeId, setSelectedNodeId] = useState<string>('dec_01');
+
+  const selectedNode = twinNodes.find(n => n.id === selectedNodeId) || twinNodes[0];
 
   const getNodeColor = (type: string) => {
     switch (type) {
@@ -46,6 +15,8 @@ export const OrganizationalGraphView: React.FC = () => {
       case 'system': return '#a78bfa';
       case 'evidence': return '#10b981';
       case 'event': return '#f43f5e';
+      case 'workflow': return '#06b6d4';
+      case 'outcome': return '#e879f9';
       default: return '#94a3b8';
     }
   };
@@ -62,7 +33,7 @@ export const OrganizationalGraphView: React.FC = () => {
             Organizational Causal Graph
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>
-            Interactive model traversing relationships across People, Policies, Events, Decisions, Workflows, Systems, and Evidence.
+            Interactive model traversing relationships across People, Policies, Events, Decisions, Workflows, Systems, Evidence, and Outcomes.
           </p>
         </div>
       </div>
@@ -70,7 +41,7 @@ export const OrganizationalGraphView: React.FC = () => {
       <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '20px' }}>
         {/* Interactive SVG Canvas */}
         <div className="glass-panel" style={{ height: '580px', position: 'relative', overflow: 'hidden', padding: '12px' }}>
-          <svg width="100%" height="100%" viewBox="0 0 840 520">
+          <svg width="100%" height="100%" viewBox="0 0 1020 540">
             <defs>
               <marker id="arrow" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.4)" />
@@ -78,12 +49,14 @@ export const OrganizationalGraphView: React.FC = () => {
             </defs>
 
             {/* Edges */}
-            {EDGES.map((e, idx) => {
-              const src = NODES.find(n => n.id === e.source);
-              const tgt = NODES.find(n => n.id === e.target);
+            {twinEdges.map((e, idx) => {
+              const src = twinNodes.find(n => n.id === e.source);
+              const tgt = twinNodes.find(n => n.id === e.target);
               if (!src || !tgt) return null;
               const midX = (src.x + tgt.x) / 2;
               const midY = (src.y + tgt.y) / 2;
+              const isSelected = selectedNode && (selectedNode.id === e.source || selectedNode.id === e.target);
+
               return (
                 <g key={idx}>
                   <line 
@@ -91,14 +64,15 @@ export const OrganizationalGraphView: React.FC = () => {
                     y1={src.y} 
                     x2={tgt.x} 
                     y2={tgt.y} 
-                    stroke="rgba(255,255,255,0.18)" 
-                    strokeWidth="2"
+                    stroke={isSelected ? (e.color || '#38bdf8') : "rgba(255,255,255,0.18)"} 
+                    strokeWidth={isSelected ? "2.5" : "1.5"}
+                    strokeDasharray={e.label.includes('exception') ? '4 4' : 'none'}
                     markerEnd="url(#arrow)"
                   />
                   <text 
                     x={midX} 
                     y={midY - 6} 
-                    fill="#64748b" 
+                    fill={isSelected ? '#38bdf8' : "#64748b"} 
                     fontSize="10" 
                     fontFamily="JetBrains Mono"
                     textAnchor="middle"
@@ -110,14 +84,14 @@ export const OrganizationalGraphView: React.FC = () => {
             })}
 
             {/* Nodes */}
-            {NODES.map((n) => {
+            {twinNodes.map((n) => {
               const isSelected = selectedNode?.id === n.id;
               const color = getNodeColor(n.type);
               return (
                 <g 
                   key={n.id} 
                   transform={`translate(${n.x}, ${n.y})`}
-                  onClick={() => setSelectedNode(n)}
+                  onClick={() => setSelectedNodeId(n.id)}
                   style={{ cursor: 'pointer' }}
                 >
                   <circle 
@@ -161,6 +135,17 @@ export const OrganizationalGraphView: React.FC = () => {
               <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '18px' }}>
                 {selectedNode.details}
               </div>
+
+              {selectedNode.meta && (
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '6px', marginBottom: '16px' }}>
+                  {Object.entries(selectedNode.meta).map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                      <span style={{ color: '#94a3b8' }}>{k}:</span>
+                      <span style={{ color: '#fff', fontWeight: 600 }}>{String(v)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '16px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>

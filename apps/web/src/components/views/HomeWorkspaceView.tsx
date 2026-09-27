@@ -5,6 +5,7 @@ import {
   GitFork, Eye, ExternalLink, Cpu, Lock, Database
 } from 'lucide-react';
 import { fetchReliabilitySummary } from '../../lib/api';
+import { TeamAccessPanel } from '../TeamAccessPanel';
 
 export interface HomeWorkspaceViewProps {
   currentRole: string;
@@ -23,6 +24,7 @@ export const HomeWorkspaceView: React.FC<HomeWorkspaceViewProps> = ({ currentRol
       {/* Header Greeting */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
         <div>
+          <TeamAccessPanel />
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
             <span className="badge badge-emerald">SYSTEM OPERATIONAL</span>
             <span className="badge badge-cyan">SOC-2 COMPLIANCE ACTIVE</span>
@@ -45,8 +47,34 @@ export const HomeWorkspaceView: React.FC<HomeWorkspaceViewProps> = ({ currentRol
         {/* Quick Action Buttons */}
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button 
+            onClick={() => onNavigate('ingestion')}
+            style={{
+              fontSize: '13.5px',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #06b6d4, #2563eb)',
+              border: 'none',
+              color: '#ffffff',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 18px rgba(6, 182, 212, 0.3)'
+            }}
+          >
+            <Database size={15} /> Ingest Data
+          </button>
+          <button 
+            onClick={() => onNavigate('twin')}
+            className="btn-secondary"
+            style={{ fontSize: '13.5px', padding: '10px 16px', borderRadius: '8px' }}
+          >
+            Digital Twin
+          </button>
+          <button 
             onClick={() => onNavigate('incidents', { openNew: true })}
-            className="btn-primary"
+            className="btn-secondary"
             style={{ fontSize: '13.5px', padding: '10px 18px', borderRadius: '8px' }}
           >
             <PlusCircle size={15} /> + New Incident

@@ -4,7 +4,7 @@ import {
   AlertTriangle, Settings, HelpCircle, Search, Bell, ChevronDown, 
   User, CheckCircle2, ArrowRight, X, ExternalLink, Filter, ShieldAlert,
   Lock, RefreshCw, Cpu, Database, Zap, Flame, GitBranch, FlaskConical, Award,
-  Building, Globe, Shield
+  Building, Globe, Shield, Users, Bot, Sparkles, Inbox, Network
 } from 'lucide-react';
 
 export interface OrganizationProfile {
@@ -23,6 +23,16 @@ export interface OrganizationProfile {
   defaultSituation: string;
   defaultClaim: number;
   accentColor: string;
+}
+
+export interface NotificationItem {
+  id: number;
+  title: string;
+  desc: string;
+  time: string;
+  type: string;
+  module: string;
+  read: boolean;
 }
 
 export const ORGANIZATIONS: OrganizationProfile[] = [
@@ -193,14 +203,16 @@ export const AppShell: React.FC<AppShellProps> = ({
     'Executive'
   ];
 
-  const notifications = [
+
+  const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     {
       id: 1,
       title: 'Approval Required: INC-1042',
       desc: 'Enterprise customer credit claim ($1,250) exceeds Lead limit.',
       time: '4m ago',
       type: 'approval',
-      module: 'incidents'
+      module: 'incidents',
+      read: false
     },
     {
       id: 2,
@@ -208,7 +220,8 @@ export const AppShell: React.FC<AppShellProps> = ({
       desc: '3 recent customer outage claims flagged with fast-track bypass.',
       time: '18m ago',
       type: 'exception',
-      module: 'audit'
+      module: 'audit',
+      read: false
     },
     {
       id: 3,
@@ -216,9 +229,52 @@ export const AppShell: React.FC<AppShellProps> = ({
       desc: 'Latency degradation response target within 30 minutes.',
       time: '32m ago',
       type: 'sla',
-      module: 'incidents'
+      module: 'incidents',
+      read: false
     }
   ];
+
+  const [notificationList, setNotificationList] = useState<NotificationItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('forge_notifications');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn(e);
+    }
+    return INITIAL_NOTIFICATIONS;
+  });
+
+  const unreadCount = notificationList.filter((n: NotificationItem) => !n.read).length;
+
+  const markAllRead = () => {
+    const updated = notificationList.map((n: NotificationItem) => ({ ...n, read: true }));
+    setNotificationList(updated);
+    try {
+      localStorage.setItem('forge_notifications', JSON.stringify(updated));
+    } catch (e) {}
+  };
+
+  const markItemRead = (id: number) => {
+    const updated = notificationList.map((n: NotificationItem) => n.id === id ? { ...n, read: true } : n);
+    setNotificationList(updated);
+    try {
+      localStorage.setItem('forge_notifications', JSON.stringify(updated));
+    } catch (e) {}
+  };
+
+  const dismissItem = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    const updated = notificationList.filter((n: NotificationItem) => n.id !== id);
+    setNotificationList(updated);
+    try {
+      localStorage.setItem('forge_notifications', JSON.stringify(updated));
+    } catch (e) {}
+  };
+
+  const handleCloseNotifications = () => {
+    markAllRead();
+    setNotificationsOpen(false);
+  };
 
   const searchResults = [
     { title: 'INC-1042 — Acme Global ($1,250 credit)', module: 'incidents', type: 'Incident' },
@@ -232,9 +288,14 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   const navItems = [
     { id: 'home', label: 'Operations Home', icon: Home },
+    { id: 'ingestion', label: 'Data Ingestion', icon: Inbox, badge: 'INGEST' },
+    { id: 'observe', label: 'Observe & Workflows', icon: Layers, badge: 'DISCOVER' },
     { id: 'decide', label: 'Active Decision', icon: Zap, badge: 'HOT' },
+    { id: 'twin', label: 'Digital Twin', icon: Network, badge: 'TWIN' },
     { id: 'incidents', label: 'Incidents & SLA', icon: ShieldCheck, badge: '4' },
+    { id: 'team', label: 'Team & Workforce', icon: Users, badge: 'LEAD' },
     { id: 'redteam', label: 'Red Team', icon: Flame, badge: 'HERO' },
+    { id: 'agents', label: 'Agent Swarm & Auto', icon: Cpu, badge: 'AUTO' },
     { id: 'candidate', label: 'Candidate V2', icon: GitBranch },
     { id: 'forgelab', label: 'FORGE LAB', icon: FlaskConical },
     { id: 'governance', label: 'Human Governance', icon: Award },
@@ -349,11 +410,12 @@ export const AppShell: React.FC<AppShellProps> = ({
                   fontSize: '12.5px',
                   letterSpacing: '0.08em',
                   color: '#ffffff',
-                  textShadow: '0 0 12px rgba(56, 189, 248, 0.4)'
+                  textShadow: '0 0 12px rgba(56, 189, 248, 0.4)',
+                  transition: 'text-shadow 0.3s ease'
                 }}>
                   FORGE <span style={{ color: '#06b6d4' }}>X</span>
                 </div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 300, marginTop: '2px' }}>
+                <div style={{ fontSize: '14px', color: '#94a3b8', fontFamily: 'var(--font-accent)', marginTop: '2px', transition: 'color 0.3s ease' }}>
                   Operations Platform
                 </div>
               </div>
@@ -382,7 +444,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                     fontSize: '13.5px',
                     fontWeight: isActive ? 600 : 400,
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease',
+                    transition: 'all 0.3s ease',
                     textAlign: 'left'
                   }}
                   onMouseEnter={(e) => {
@@ -398,12 +460,13 @@ export const AppShell: React.FC<AppShellProps> = ({
                   </div>
                   {item.badge && (
                     <span style={{
-                      fontSize: '10.5px',
-                      fontWeight: 700,
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-accent)',
                       background: item.id === 'redteam' ? 'rgba(244, 63, 94, 0.25)' : (item.id === 'decide' ? 'rgba(6, 182, 212, 0.25)' : 'rgba(37, 99, 235, 0.3)'),
                       color: item.id === 'redteam' ? '#f43f5e' : (item.id === 'decide' ? '#38bdf8' : '#60a5fa'),
-                      padding: '2px 7px',
-                      borderRadius: '10px'
+                      padding: '2px 8px',
+                      borderRadius: '10px',
+                      transition: 'all 0.3s ease'
                     }}>
                       {item.badge}
                     </span>
@@ -672,6 +735,68 @@ export const AppShell: React.FC<AppShellProps> = ({
 
           {/* Right: Notifications, Role Switcher, User Menu */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            {/* 5-Min Judge Demo Mode Launcher */}
+            <button
+              id="header-judge-demo-btn"
+              onClick={() => window.dispatchEvent(new CustomEvent('forge:start-demo'))}
+              title="Launch Automated 5-Minute Judge Demo Tour"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '7px 15px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.3))',
+                border: '1px solid #38bdf8',
+                color: '#38bdf8',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                boxShadow: '0 0 20px rgba(6, 182, 212, 0.45)',
+                letterSpacing: '0.02em',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Zap size={15} color="#38bdf8" />
+              <span>⚡ 5-MIN JUDGE DEMO</span>
+            </button>
+
+            {/* AI Assistant (Synapse-X) Quick Trigger */}
+            <button
+              id="header-ai-teammate-btn"
+              onClick={() => window.dispatchEvent(new CustomEvent('forge:toggle-ai-teammate'))}
+              title="Toggle Autonomous AI Teammate (Synapse-X)"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '7px 15px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(6, 182, 212, 0.25))',
+                border: '1px solid rgba(192, 132, 252, 0.8)',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                boxShadow: '0 0 20px rgba(168, 85, 247, 0.4)',
+                letterSpacing: '0.02em',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Bot size={15} color="#c084fc" />
+              <span>🤖 AI TEAMMATE</span>
+              <span style={{
+                background: '#10b981',
+                color: '#000',
+                fontSize: '9px',
+                padding: '2px 5px',
+                borderRadius: '10px',
+                fontWeight: 900
+              }}>
+                ONLINE
+              </span>
+            </button>
+
             {/* Role Switcher */}
             <div style={{ position: 'relative' }}>
               <button
@@ -741,7 +866,14 @@ export const AppShell: React.FC<AppShellProps> = ({
             {/* Notifications Bell */}
             <div style={{ position: 'relative' }}>
               <button
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                onClick={() => {
+                  if (notificationsOpen) {
+                    handleCloseNotifications();
+                  } else {
+                    setNotificationsOpen(true);
+                  }
+                }}
+                title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications (All read)'}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -751,29 +883,33 @@ export const AppShell: React.FC<AppShellProps> = ({
                   borderRadius: '8px',
                   background: 'rgba(255, 255, 255, 0.04)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#cbd5e1',
+                  color: unreadCount > 0 ? '#38bdf8' : '#cbd5e1',
                   cursor: 'pointer',
-                  position: 'relative'
+                  position: 'relative',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 <Bell size={16} />
-                <span style={{
-                  position: 'absolute',
-                  top: '-3px',
-                  right: '-3px',
-                  width: '15px',
-                  height: '15px',
-                  borderRadius: '50%',
-                  background: '#ef4444',
-                  color: '#fff',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  3
-                </span>
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-3px',
+                    right: '-3px',
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: '#ef4444',
+                    color: '#fff',
+                    fontSize: '9.5px',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)'
+                  }}>
+                    {unreadCount}
+                  </span>
+                )}
               </button>
 
               {/* Notifications Drawer Dropdown */}
@@ -782,44 +918,119 @@ export const AppShell: React.FC<AppShellProps> = ({
                   position: 'absolute',
                   top: '110%',
                   right: 0,
-                  width: '320px',
+                  width: '340px',
                   background: '#0d1527',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.14)',
                   borderRadius: '10px',
-                  padding: '12px',
-                  boxShadow: '0 16px 36px rgba(0,0,0,0.7)',
-                  zIndex: 50
+                  padding: '14px',
+                  boxShadow: '0 16px 40px rgba(0,0,0,0.85)',
+                  zIndex: 50,
+                  backdropFilter: 'blur(20px)'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>Notifications</span>
-                    <span style={{ fontSize: '11px', color: '#38bdf8', cursor: 'pointer' }}>Mark all read</span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {notifications.map(n => (
-                      <div
-                        key={n.id}
-                        onClick={() => {
-                          onSelectModule(n.module);
-                          setNotificationsOpen(false);
-                        }}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>Notifications</span>
+                      {unreadCount > 0 ? (
+                        <span style={{ fontSize: '10px', background: '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
+                          {unreadCount} new
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
+                          All caught up
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllRead}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '11px',
+                            color: '#38bdf8',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            padding: 0
+                          }}
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                      <button
+                        onClick={handleCloseNotifications}
+                        title="Close Notifications & Clear Badge"
                         style={{
-                          padding: '10px',
-                          borderRadius: '6px',
-                          background: 'rgba(255, 255, 255, 0.03)',
-                          border: '1px solid rgba(255, 255, 255, 0.06)',
-                          cursor: 'pointer'
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: 'none',
+                          color: '#94a3b8',
+                          cursor: 'pointer',
+                          borderRadius: '4px',
+                          padding: '3px 6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>
-                          <span>{n.title}</span>
-                          <span style={{ fontSize: '10px', color: '#64748b' }}>{n.time}</span>
-                        </div>
-                        <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '4px', lineHeight: 1.4 }}>
-                          {n.desc}
-                        </div>
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '320px', overflowY: 'auto' }}>
+                    {notificationList.length === 0 ? (
+                      <div style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+                        No notifications remaining
                       </div>
-                    ))}
+                    ) : (
+                      notificationList.map((n: NotificationItem) => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            markItemRead(n.id);
+                            onSelectModule(n.module);
+                            setNotificationsOpen(false);
+                          }}
+                          style={{
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            background: n.read ? 'rgba(255, 255, 255, 0.02)' : 'rgba(6, 182, 212, 0.10)',
+                            border: n.read ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid rgba(6, 182, 212, 0.3)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            position: 'relative'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '12px', fontWeight: n.read ? 500 : 700, color: n.read ? '#cbd5e1' : '#ffffff' }}>
+                              {!n.read && <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#38bdf8', marginRight: '6px' }} />}
+                              {n.title}
+                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '10px', color: '#64748b' }}>{n.time}</span>
+                              <button
+                                onClick={(e) => dismissItem(e, n.id)}
+                                title="Dismiss notification"
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: '#64748b',
+                                  cursor: 'pointer',
+                                  padding: '2px',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '4px', lineHeight: 1.4 }}>
+                            {n.desc}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

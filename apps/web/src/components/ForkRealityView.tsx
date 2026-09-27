@@ -21,7 +21,7 @@ export const ForkRealityView: React.FC<{ onNavigate: (tab: string) => void }> = 
   const handleSimulate = async () => {
     setSimulating(true);
     try {
-      const data = await runForkReality({
+      const data: any = await runForkReality({
         threshold_amount: thresholdAmount,
         auto_approve_enterprise: autoApproveEnterprise,
         sla_escalation_hours: slaEscalationHours,
@@ -30,7 +30,7 @@ export const ForkRealityView: React.FC<{ onNavigate: (tab: string) => void }> = 
         iterations: 1000,
       });
       setResult(data);
-      if (data?.pareto_frontier?.length > 1) {
+      if (data && data.pareto_frontier && Array.isArray(data.pareto_frontier) && data.pareto_frontier.length > 1) {
         setSelectedParetoPoint(data.pareto_frontier[1]);
       }
     } catch (err) {

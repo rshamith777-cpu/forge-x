@@ -17,11 +17,13 @@ import {
 import { fetchCandidateV2, approveCandidatePolicy } from '../../lib/api';
 
 interface CandidateV2ViewProps {
+  initialMode?: 'candidate' | 'governance';
   onNavigateToLab?: () => void;
   onNavigateToMemory?: () => void;
 }
 
 export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
+  initialMode = 'candidate',
   onNavigateToLab,
   onNavigateToMemory
 }) => {
@@ -29,6 +31,8 @@ export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [approving, setApproving] = useState<boolean>(false);
   const [approvalSuccess, setApprovalSuccess] = useState<any>(null);
+
+  const isGovernanceMode = initialMode === 'governance';
 
   const loadData = async () => {
     try {
@@ -78,11 +82,11 @@ export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
               fontFamily: "'JetBrains Mono', monospace",
               padding: '3px 8px',
               borderRadius: '4px',
-              background: 'rgba(244, 63, 94, 0.15)',
-              color: '#f43f5e',
-              border: '1px solid rgba(244, 63, 94, 0.3)'
+              background: isGovernanceMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+              color: isGovernanceMode ? '#34d399' : '#f43f5e',
+              border: `1px solid ${isGovernanceMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`
             }}>
-              FAILURE ANALYSIS &amp; POLICY EVOLUTION
+              {isGovernanceMode ? '🏛️ HUMAN GOVERNANCE COCKPIT' : 'FAILURE ANALYSIS & POLICY EVOLUTION'}
             </span>
             <span style={{
               fontSize: '11px',
@@ -93,7 +97,7 @@ export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
               color: isApproved ? '#34d399' : '#fbbf24',
               border: `1px solid ${isApproved ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
             }}>
-              {isApproved ? 'STATUS: APPROVED & ACTIVE' : 'STATUS: PENDING HUMAN APPROVAL'}
+              {isApproved ? 'STATUS: RATIFIED & PROMOTED TO MEMORY' : 'STATUS: PENDING EXECUTIVE SIGN-OFF'}
             </span>
           </div>
           <h1 style={{
@@ -103,10 +107,12 @@ export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
             letterSpacing: '0.04em',
             margin: '8px 0'
           }}>
-            Candidate Playbook V2
+            {isGovernanceMode ? 'Human Governance & Policy Authorization' : 'Candidate Playbook V2'}
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 300, margin: 0 }}>
-            Controlled policy evolution: AI generates Candidate V2 from failure analysis, verified in FORGE LAB, requiring human authorization.
+            {isGovernanceMode 
+              ? 'Executive authorization authority: review empirical test gates, inspect policy mutations, sign off on Candidate V2, and ratify changes into trusted organizational memory.'
+              : 'Controlled policy evolution: AI generates Candidate V2 from failure analysis, verified in FORGE LAB, requiring human authorization.'}
           </p>
         </div>
 

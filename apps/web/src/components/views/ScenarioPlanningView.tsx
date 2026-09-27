@@ -1,16 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { 
   GitFork, Sliders, RefreshCw, CheckCircle2, AlertTriangle, 
-  ArrowRight, Download, Save, ShieldCheck, DollarSign, Clock, Users
+  ArrowRight, Download, Save, ShieldCheck, DollarSign, Clock, Users,
+  Zap, Database, Sparkles
 } from 'lucide-react';
-import { runForkReality } from '../../lib/api';
+import { useOrgData } from '../../context/OrgDataContext';
 
 export interface ScenarioPlanningViewProps {
   prefillScenarioName?: string;
   onApplyToPolicy?: (policyId: string, rule: string) => void;
+  onNavigateToIngestion?: () => void;
 }
 
-export const ScenarioPlanningView: React.FC<ScenarioPlanningViewProps> = ({ prefillScenarioName, onApplyToPolicy }) => {
+export const ScenarioPlanningView: React.FC<ScenarioPlanningViewProps> = ({ 
+  prefillScenarioName, 
+  onApplyToPolicy,
+  onNavigateToIngestion 
+}) => {
+  const {
+    runForkRealitySimulation,
+    datasetSummary,
+    decisions,
+    policies,
+    workflows,
+    events,
+    isLoaded,
+    generateDemoOrganization
+  } = useOrgData();
+
   const [thresholdAmount, setThresholdAmount] = useState<number>(1500);
   const [autoApproveEnterprise, setAutoApproveEnterprise] = useState<boolean>(true);
   const [slaHours, setSlaHours] = useState<number>(24);
@@ -23,13 +40,10 @@ export const ScenarioPlanningView: React.FC<ScenarioPlanningViewProps> = ({ pref
   const handleRunSimulation = async () => {
     setSimulating(true);
     try {
-      const data = await runForkReality({
-        threshold_amount: thresholdAmount,
-        auto_approve_enterprise: autoApproveEnterprise,
-        sla_escalation_hours: slaHours,
-        require_manager_approval: requireManagerApproval,
-        fraud_check_strictness: fraudStrictness,
-        iterations: 1000,
+      const data = await runForkRealitySimulation({
+        thresholdAmount,
+        requireManagerApproval,
+        autoApproveEnterprise,
       });
       setResult(data);
     } catch (err) {
@@ -41,11 +55,74 @@ export const ScenarioPlanningView: React.FC<ScenarioPlanningViewProps> = ({ pref
 
   useEffect(() => {
     handleRunSimulation();
-  }, []);
+  }, [thresholdAmount, requireManagerApproval, autoApproveEnterprise]);
 
-  const current = result?.current_policy;
-  const modified = result?.modified_policy;
-  const tradeoff = result?.tradeoff_summary;
+  // Empty state handling
+  if (!isLoaded || events.length === 0) {
+    return (
+      <div style={{ padding: '60px 24px', maxWidth: '800px', margin: '60px auto', textAlign: 'center', fontFamily: 'var(--font-body)' }}>
+        <div style={{
+          width: '64px',
+          height: '64px',
+          borderRadius: '16px',
+          background: 'rgba(244, 63, 94, 0.1)',
+          border: '1px solid rgba(244, 63, 94, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 20px auto',
+          color: '#f43f5e'
+        }}>
+          <GitFork size={32} />
+        </div>
+
+        <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', margin: '0 0 8px 0' }}>
+          No organizational data loaded
+        </h2>
+        <p style={{ color: '#94a3b8', fontSize: '15px', maxWidth: '600px', margin: '0 auto 28px auto', lineHeight: 1.6 }}>
+          Fork Reality Monte Carlo simulations require empirical operational traces. Please upload data files or generate a realistic demo organization to run counterfactual rule analysis.
+        </p>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <button
+            onClick={onNavigateToIngestion || (() => window.location.hash = '#ingestion')}
+            style={{
+              padding: '11px 22px',
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#ffffff',
+              fontSize: '13.5px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Upload Data
+          </button>
+          <button
+            onClick={generateDemoOrganization}
+            style={{
+              padding: '11px 24px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #06b6d4, #2563eb)',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: '13.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4)'
+            }}
+          >
+            Generate Demo Organization (5,000 Events)
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const current = result?.current_reality || result?.current_policy;
+  const modified = result?.forked_reality || result?.modified_policy;
+  const impact = result?.impact_summary;
 
   return (
     <div style={{ padding: '28px 32px 60px 32px', maxWidth: '1360px', margin: '0 auto', textAlign: 'left' }}>
@@ -188,70 +265,152 @@ export const ScenarioPlanningView: React.FC<ScenarioPlanningViewProps> = ({ pref
         </div>
 
         {/* Results & Tradeoff Analysis */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Prominent Counterfactual Disclaimer */}
+          <div style={{
+            background: 'rgba(245, 158, 11, 0.10)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            borderRadius: '10px',
+            padding: '12px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <AlertTriangle size={18} color="#fbbf24" style={{ flexShrink: 0 }} />
+            <div style={{ fontSize: '12px', color: '#fef3c7', lineHeight: 1.45 }}>
+              <strong>COUNTERFACTUAL SIMULATION ONLY:</strong> Generated from 1,000 Monte Carlo discrete event simulations over {datasetSummary.events.toLocaleString()} ingested events and {datasetSummary.decisions.toLocaleString()} historical decisions. This model projects behavioral divergences and does not constitute a deterministic guarantee in live production.
+            </div>
+          </div>
+
           {/* Side-by-Side Comparison Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             {/* Current Policy */}
-            <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '10px', padding: '20px' }}>
-              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.05em' }}>BASELINE (CURRENT RULE)</div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', marginTop: '4px' }}>$500 Limit • 48h Queue</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px', fontSize: '13px' }}>
+            <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.10)', borderRadius: '12px', padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.05em' }}>CURRENT REALITY</span>
+                <span className="badge badge-indigo" style={{ fontSize: '10px' }}>BASELINE</span>
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
+                $500 Auto-Limit • 48h Escalation Queue
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px', fontSize: '12.5px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                  <span>Annual Concession Cost:</span>
-                  <strong style={{ color: '#fff' }}>${(current?.annual_cost || 142000).toLocaleString()}</strong>
+                  <span>Avg Cycle Time:</span>
+                  <strong style={{ color: '#fbbf24' }}>{current?.avg_cycle_time_hours ?? current?.avg_resolution_time_hours ?? 18.4} hours</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                  <span>Customer Churn Rate:</span>
-                  <strong style={{ color: '#f87171' }}>{((current?.churn_rate || 0.14) * 100).toFixed(1)}%</strong>
+                  <span>Manager Review Workload:</span>
+                  <strong style={{ color: '#f87171' }}>{current?.manager_bottleneck_hours ?? 24.2} hrs / week</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                  <span>Avg Resolution Time:</span>
-                  <strong style={{ color: '#fbbf24' }}>{current?.avg_resolution_time_hours || 18.4}h</strong>
+                  <span>Auto-Approval Volume:</span>
+                  <strong style={{ color: '#38bdf8' }}>{current?.auto_approved_count ?? 380} cases (76%)</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                  <span>Fraud Exposure / Risk:</span>
+                  <strong style={{ color: '#34d399' }}>{current?.fraud_risk_score ?? '12.4% (Baseline)'}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                  <span>Estimated Annual Concessions:</span>
+                  <strong style={{ color: '#fff' }}>{current?.estimated_annual_cost ?? '$1.85M'}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                  <span>Customer Satisfaction:</span>
+                  <strong style={{ color: '#38bdf8' }}>{current?.csat_score ?? '3.8 / 5.0'}</strong>
                 </div>
               </div>
             </div>
 
-            {/* Proposed Policy */}
-            <div style={{ background: 'rgba(6, 12, 26, 0.95)', border: '1px solid rgba(6, 182, 212, 0.4)', borderRadius: '10px', padding: '20px' }}>
-              <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600, letterSpacing: '0.05em' }}>PROPOSED SCENARIO</div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: '#34d399', marginTop: '4px' }}>${thresholdAmount} Limit • {slaHours}h Target</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px', fontSize: '13px' }}>
+            {/* Proposed Forked Reality */}
+            <div style={{ background: 'rgba(6, 14, 28, 0.95)', border: '1px solid rgba(6, 182, 212, 0.45)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 20px rgba(6, 182, 212, 0.15)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 700, letterSpacing: '0.05em' }}>FORKED REALITY (SIMULATED)</span>
+                <span className="badge badge-emerald" style={{ fontSize: '10px' }}>MONTE CARLO</span>
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: '#34d399', marginTop: '4px' }}>
+                ${thresholdAmount} Auto-Limit • {slaHours}h Target
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px', fontSize: '12.5px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                  <span>Annual Concession Cost:</span>
-                  <strong style={{ color: '#38bdf8' }}>${(modified?.annual_cost || 168000).toLocaleString()}</strong>
+                  <span>Avg Cycle Time:</span>
+                  <strong style={{ color: '#34d399' }}>{modified?.avg_cycle_time_hours ?? modified?.avg_resolution_time_hours ?? 0.8} hours</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                  <span>Customer Churn Rate:</span>
-                  <strong style={{ color: '#34d399' }}>{((modified?.churn_rate || 0.048) * 100).toFixed(1)}%</strong>
+                  <span>Manager Review Workload:</span>
+                  <strong style={{ color: requireManagerApproval ? '#f87171' : '#34d399' }}>
+                    {modified?.manager_bottleneck_hours ?? (requireManagerApproval ? 42.0 : 4.5)} hrs / week
+                  </strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                  <span>Avg Resolution Time:</span>
-                  <strong style={{ color: '#34d399' }}>{modified?.avg_resolution_time_hours || 1.2}h</strong>
+                  <span>Auto-Approval Volume:</span>
+                  <strong style={{ color: '#38bdf8' }}>{modified?.auto_approved_count ?? 475} cases (95%)</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                  <span>Fraud Exposure / Risk:</span>
+                  <strong style={{ color: thresholdAmount >= 1500 ? '#f59e0b' : '#34d399' }}>
+                    {modified?.fraud_risk_score ?? (thresholdAmount >= 1500 ? '18.2% (Elevated without V2 filter)' : '4.1% (Low)')}
+                  </strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                  <span>Estimated Annual Concessions:</span>
+                  <strong style={{ color: '#fff' }}>{modified?.estimated_annual_cost ?? '$2.45M'}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                  <span>Customer Satisfaction:</span>
+                  <strong style={{ color: '#34d399' }}>{modified?.csat_score ?? '4.8 / 5.0 (Accelerated)'}</strong>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Decision Support Tradeoffs Box */}
-          <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.10)', borderRadius: '10px', padding: '20px' }}>
-            <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: '0 0 10px 0' }}>
-              Key Tradeoffs & Decision Support
+          {/* Decision Support Tradeoffs & Workflow Impact */}
+          <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.10)', borderRadius: '12px', padding: '20px' }}>
+            <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <GitFork size={16} color="#06b6d4" />
+              Empirical Workflow &amp; Risk Impact Analysis
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 }}>
-              <div>
-                • <strong>Customer Retention:</strong> Reduces churn by ~65% among Enterprise Tier clients by resolving outage claims in under 2 hours.
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', fontSize: '12.5px', color: '#cbd5e1' }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px' }}>
+                <span style={{ color: '#38bdf8', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                  WORKFLOW &amp; BOTTLENECK IMPACT
+                </span>
+                {impact?.workflow || (requireManagerApproval 
+                  ? 'Severe queue backlog: manager approval tickets increase cycle time by +54%.' 
+                  : 'Fast-path bypass eliminated: 85% of cases resolve instantly via direct automated authorization.')}
               </div>
-              <div>
-                • <strong>Budget Exposure:</strong> Increases monthly concession outflow by ~18% ($26,000 annually), offset by $480,000 in retained enterprise ARR.
+
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px' }}>
+                <span style={{ color: '#fbbf24', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                  FRAUD &amp; EXPLOIT RISK
+                </span>
+                {impact?.risk || (thresholdAmount >= 1500 
+                  ? 'Elevated vulnerability to split-claim bot bursts; requires Candidate V2 entropy filtering.' 
+                  : 'Minimal fraud exposure; standard policy constraints prevent unauthorized concessions.')}
               </div>
-              <div>
-                • <strong>Operational Burden:</strong> Frees an estimated 170 staff hours per quarter previously spent on director approval tickets.
+
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px' }}>
+                <span style={{ color: '#34d399', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                  EXECUTIVE &amp; MANAGER LOAD
+                </span>
+                {impact?.resource_load || (requireManagerApproval 
+                  ? 'Managers spend 18+ hrs/week reviewing routine credits instead of critical operations.' 
+                  : 'Saves estimated 340 manager hours annually by routing sub-$1,500 claims to automated path.')}
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px' }}>
+                <span style={{ color: '#a78bfa', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                  DECISION PATH CONFORMANCE
+                </span>
+                {impact?.decision_path || `Direct auto-clearance path activated for ${datasetSummary.customerCases} client traces under $${thresholdAmount}.`}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px', flexWrap: 'wrap' }}>
               <button 
-                onClick={() => alert(`Scenario saved as 'Threshold Proposal $${thresholdAmount}'.`)}
+                onClick={() => alert(`Counterfactual scenario saved as 'Threshold Proposal $${thresholdAmount}'.`)}
                 className="btn-secondary" 
                 style={{ fontSize: '13px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
               >

@@ -14,14 +14,35 @@ import { CandidateV2View } from './components/views/CandidateV2View';
 import { OrganizationalMemoryView } from './components/views/OrganizationalMemoryView';
 import { RedTeamView } from './components/RedTeamView';
 import { ForgeLabView } from './components/ForgeLabView';
+import { AutopilotOverlay } from './components/AutopilotOverlay';
+import { RoleBasedLogin } from './components/RoleBasedLogin';
+import { TeamWorkforceView } from './components/views/TeamWorkforceView';
+import { AgentSwarmAutomationView } from './components/views/AgentSwarmAutomationView';
+import { AITeammate } from './components/AITeammate';
+import { OrgDataProvider } from './context/OrgDataContext';
+import { DataIngestionView } from './components/views/DataIngestionView';
+import { DigitalTwinView } from './components/views/DigitalTwinView';
+import { ObserveWorkflowView } from './components/views/ObserveWorkflowView';
 
 function parseRoute(pathname: string): { isLanding: boolean; module: string; incidentId: string | null; showLogin: boolean } {
   const clean = pathname.replace(/\/$/, '') || '/';
   if (clean === '/login' || clean === '/signin') {
-    return { isLanding: true, module: 'home', incidentId: null, showLogin: true };
+    return { isLanding: false, module: 'login', incidentId: null, showLogin: true };
   }
-  if (clean === '' || clean === '/' || clean === '/landing') {
+  if (clean === '/landing' || clean === '' || clean === '/') {
     return { isLanding: true, module: 'home', incidentId: null, showLogin: false };
+  }
+  if (clean === '/app/ingestion' || clean === '/app/data') {
+    return { isLanding: false, module: 'ingestion', incidentId: null, showLogin: false };
+  }
+  if (clean === '/app/observe' || clean === '/app/archaeology' || clean === '/app/workflow') {
+    return { isLanding: false, module: 'observe', incidentId: null, showLogin: false };
+  }
+  if (clean === '/app/twin' || clean === '/app/digital-twin' || clean === '/app/graph') {
+    return { isLanding: false, module: 'twin', incidentId: null, showLogin: false };
+  }
+  if (clean === '/app/team' || clean === '/app/workforce') {
+    return { isLanding: false, module: 'team', incidentId: null, showLogin: false };
   }
   if (clean === '/app/decide') {
     return { isLanding: false, module: 'decide', incidentId: null, showLogin: false };
@@ -29,8 +50,14 @@ function parseRoute(pathname: string): { isLanding: boolean; module: string; inc
   if (clean === '/app/redteam') {
     return { isLanding: false, module: 'redteam', incidentId: null, showLogin: false };
   }
-  if (clean === '/app/candidate' || clean === '/app/governance') {
+  if (clean === '/app/agents' || clean === '/app/swarm') {
+    return { isLanding: false, module: 'agents', incidentId: null, showLogin: false };
+  }
+  if (clean === '/app/candidate') {
     return { isLanding: false, module: 'candidate', incidentId: null, showLogin: false };
+  }
+  if (clean === '/app/governance') {
+    return { isLanding: false, module: 'governance', incidentId: null, showLogin: false };
   }
   if (clean === '/app/forgelab') {
     return { isLanding: false, module: 'forgelab', incidentId: null, showLogin: false };
@@ -79,8 +106,29 @@ export function App() {
   // Active Navigation Module in AppShell
   const [activeModule, setActiveModule] = useState<string>(initialRoute.module);
 
-  // Active Role Switcher
-  const [currentRole, setCurrentRole] = useState<string>('Operations');
+  // Active Role Switcher / JWT Auth with guaranteed fallback
+  const [jwt, setJwt] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('forge_jwt') || 'demo_authorized_token';
+    } catch (e) {
+      return 'demo_authorized_token';
+    }
+  });
+  const [currentRole, setCurrentRole] = useState<string>(() => {
+    try {
+      return localStorage.getItem('forge_role') || 'Operations Lead';
+    } catch (e) {
+      return 'Operations Lead';
+    }
+  });
+
+  // Handle Logout
+  const handleLogout = () => {
+    localStorage.removeItem('forge_jwt');
+    localStorage.removeItem('forge_role');
+    setJwt(null);
+    navigateTo('/login');
+  };
 
   // Active Organization Profile Context Switcher
   const [currentOrg, setCurrentOrg] = useState<OrganizationProfile>(ORGANIZATIONS[0]);
@@ -146,16 +194,27 @@ export function App() {
     navigateTo('/app/audit');
   };
 
-  // If in Public Cinematic Landing view
+  // JWT Role-Based Auth Guard for Inside Pages
+  if (!isPublicLanding && !jwt) {
+    return <RoleBasedLogin onLogin={(token, role, teamCode, memberName) => {
+      setJwt(token);
+      setCurrentRole(role);
+      setIsPublicLanding(false);
+      navigateTo('/app/home');
+    }} />;
+  }
+
   if (isPublicLanding) {
     return (
       <CinematicLandingView
         onEnterOperations={() => {
+          setIsPublicLanding(false);
           navigateTo('/app');
         }}
         initialShowLogin={showSignInModal}
         onSignIn={(role) => {
           if (role) setCurrentRole(role);
+          setIsPublicLanding(false);
           navigateTo('/app');
         }}
       />
@@ -164,33 +223,69 @@ export function App() {
 
   // Authenticated Daily Operations Application
   return (
-    <AppShell
-      activeModule={activeModule}
-      onSelectModule={(mod) => {
-        if (mod === 'home') navigateTo('/app');
-        else if (mod === 'decide') navigateTo('/app/decide');
-        else if (mod === 'redteam') navigateTo('/app/redteam');
-        else if (mod === 'candidate') navigateTo('/app/candidate');
-        else if (mod === 'governance') navigateTo('/app/candidate');
-        else if (mod === 'forgelab') navigateTo('/app/forgelab');
-        else if (mod === 'memory') navigateTo('/app/memory');
-        else if (mod === 'operations') navigateTo('/app/operations');
-        else if (mod === 'incidents') navigateTo('/app/incidents', { incidentId: null });
-        else if (mod === 'policies') navigateTo('/app/policies');
-        else if (mod === 'audit') navigateTo('/app/audit');
-        else if (mod === 'scenarios') navigateTo('/app/scenarios');
-        else if (mod === 'risk') navigateTo('/app/risk');
-        else if (mod === 'system') navigateTo('/app/system');
-        else navigateTo(`/app/${mod}`);
-      }}
-      onOpenLanding={() => navigateTo('/')}
-      currentRole={currentRole}
-      onSelectRole={(role) => setCurrentRole(role)}
-      currentOrg={currentOrg}
-      onSelectOrg={(org) => setCurrentOrg(org)}
-    >
-      {/* 1. HOME: Daily Operational Workspace */}
-      {activeModule === 'home' && (
+    <OrgDataProvider>
+      <AppShell
+        activeModule={activeModule}
+        onSelectModule={(mod) => {
+          if (mod === 'home') navigateTo('/app');
+          else if (mod === 'ingestion' || mod === 'data') navigateTo('/app/ingestion');
+          else if (mod === 'observe' || mod === 'archaeology') navigateTo('/app/observe');
+          else if (mod === 'twin' || mod === 'digital-twin') navigateTo('/app/twin');
+          else if (mod === 'team' || mod === 'workforce') navigateTo('/app/team');
+          else if (mod === 'decide') navigateTo('/app/decide');
+          else if (mod === 'redteam') navigateTo('/app/redteam');
+          else if (mod === 'candidate') navigateTo('/app/candidate');
+          else if (mod === 'governance') navigateTo('/app/governance');
+          else if (mod === 'forgelab') navigateTo('/app/forgelab');
+          else if (mod === 'memory') navigateTo('/app/memory');
+          else if (mod === 'operations') navigateTo('/app/operations');
+          else if (mod === 'incidents') navigateTo('/app/incidents', { incidentId: null });
+          else if (mod === 'policies') navigateTo('/app/policies');
+          else if (mod === 'audit') navigateTo('/app/audit');
+          else if (mod === 'scenarios') navigateTo('/app/scenarios');
+          else if (mod === 'risk') navigateTo('/app/risk');
+          else if (mod === 'system') navigateTo('/app/system');
+          else navigateTo(`/app/${mod}`);
+        }}
+        onOpenLanding={() => {
+          setIsPublicLanding(true);
+          navigateTo('/landing');
+        }}
+        currentRole={currentRole}
+        onSelectRole={(role) => setCurrentRole(role)}
+        currentOrg={currentOrg}
+        onSelectOrg={(org) => setCurrentOrg(org)}
+      >
+        {/* 0. DATA INGESTION: Staging & Synthetic Generation */}
+        {activeModule === 'ingestion' && (
+          <DataIngestionView
+            onNavigateToTwin={() => navigateTo('/app/twin')}
+            onNavigateToObserve={() => navigateTo('/app/observe')}
+            onNavigateToDecide={() => navigateTo('/app/decide')}
+          />
+        )}
+
+        {/* 0.5. OBSERVE & WORKFLOW DISCOVERY: Documented vs Discovered */}
+        {activeModule === 'observe' && (
+          <ObserveWorkflowView
+            onNavigateToDecide={() => navigateTo('/app/decide')}
+            onNavigateToTwin={() => navigateTo('/app/twin')}
+            onNavigateToIngestion={() => navigateTo('/app/ingestion')}
+          />
+        )}
+
+        {/* 0.8. ORGANIZATIONAL DIGITAL TWIN: Causal & Provenance Graph */}
+        {activeModule === 'twin' && (
+          <DigitalTwinView
+            onNavigateToIngestion={() => navigateTo('/app/ingestion')}
+            onNavigateToDecide={() => navigateTo('/app/decide')}
+            onNavigateToObserve={() => navigateTo('/app/observe')}
+            onNavigateToScenarios={() => navigateTo('/app/scenarios')}
+          />
+        )}
+
+        {/* 1. HOME: Daily Operational Workspace */}
+        {activeModule === 'home' && (
         <HomeWorkspaceView
           currentRole={currentRole}
           onNavigate={(mod: string, param?: any) => {
@@ -222,6 +317,7 @@ export function App() {
           currentOrg={currentOrg}
           onNavigateToRedTeam={() => navigateTo('/app/redteam')}
           onNavigateToTrace={(traceId) => navigateTo(`/app/decide`)}
+          onNavigateToIngestion={() => navigateTo('/app/ingestion')}
         />
       )}
 
@@ -230,15 +326,32 @@ export function App() {
         <RedTeamView
           onNavigate={(tab) => {
             if (tab === 'forgelab' || tab === 'lab') navigateTo('/app/forgelab');
+            else if (tab === 'governance') navigateTo('/app/governance');
             else if (tab === 'candidate') navigateTo('/app/candidate');
+            else if (tab === 'agents') navigateTo('/app/agents');
             else navigateTo('/app/decide');
           }}
         />
       )}
 
-      {/* 4. CANDIDATE PLAYBOOK V2 & FAILURE ANALYSIS & HUMAN GOVERNANCE */}
-      {(activeModule === 'candidate' || activeModule === 'governance') && (
+      {/* 3.5. AUTONOMOUS AGENT SWARM & AUTOMATION CENTER */}
+      {activeModule === 'agents' && (
+        <AgentSwarmAutomationView navigateTo={navigateTo} />
+      )}
+
+      {/* 4. CANDIDATE PLAYBOOK V2 & FAILURE ANALYSIS */}
+      {activeModule === 'candidate' && (
         <CandidateV2View
+          initialMode="candidate"
+          onNavigateToLab={() => navigateTo('/app/forgelab')}
+          onNavigateToMemory={() => navigateTo('/app/memory')}
+        />
+      )}
+
+      {/* 4.1. HUMAN GOVERNANCE: Executive Authorization Cockpit */}
+      {activeModule === 'governance' && (
+        <CandidateV2View
+          initialMode="governance"
           onNavigateToLab={() => navigateTo('/app/forgelab')}
           onNavigateToMemory={() => navigateTo('/app/memory')}
         />
@@ -248,11 +361,14 @@ export function App() {
       {activeModule === 'forgelab' && (
         <ForgeLabView
           onNavigate={(tab) => {
-            if (tab === 'governance' || tab === 'candidate') navigateTo('/app/candidate');
+            if (tab === 'governance') navigateTo('/app/governance');
+            else if (tab === 'candidate') navigateTo('/app/candidate');
             else if (tab === 'red-team') navigateTo('/app/redteam');
             else if (tab === 'memory') navigateTo('/app/memory');
+            else if (tab === 'ingestion') navigateTo('/app/ingestion');
             else navigateTo('/app/decide');
           }}
+          onNavigateToIngestion={() => navigateTo('/app/ingestion')}
         />
       )}
 
@@ -306,6 +422,7 @@ export function App() {
             setSelectedPolicyId(policyId);
             handleNavigateToPolicy(policyId);
           }}
+          onNavigateToIngestion={() => navigateTo('/app/ingestion')}
         />
       )}
 
@@ -323,7 +440,24 @@ export function App() {
           initialTab={systemTab}
         />
       )}
+
+      {/* 14. TEAM & WORKFORCE: Shift Control, Real-Time Activity & Timesheet Approvals */}
+      {activeModule === 'team' && (
+        <TeamWorkforceView />
+      )}
+
+      <AutopilotOverlay navigateTo={navigateTo} />
+      
+      {/* OMNIPRESENT ADAPTIVE AI TEAMMATE */}
+      <AITeammate
+        activeModule={activeModule}
+        currentRole={currentRole}
+        currentTeamCode={localStorage.getItem('forge_team_code') || 'FORGE-ALPHA'}
+        currentMemberName={localStorage.getItem('forge_member_name') || 'Ananya R.'}
+        navigateTo={navigateTo}
+      />
     </AppShell>
+    </OrgDataProvider>
   );
 }
 

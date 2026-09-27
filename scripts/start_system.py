@@ -43,10 +43,19 @@ def main():
     try:
         while True:
             time.sleep(1)
+            if backend_proc.poll() is not None:
+                print(f"\n[!] Backend process exited unexpectedly with code {backend_proc.returncode}")
+                break
+            if frontend_proc.poll() is not None:
+                print(f"\n[!] Frontend process exited unexpectedly with code {frontend_proc.returncode}")
+                break
     except KeyboardInterrupt:
         print("\nShutting down FORGE X services...")
-        backend_proc.terminate()
-        frontend_proc.terminate()
+    finally:
+        if backend_proc.poll() is None:
+            backend_proc.terminate()
+        if frontend_proc.poll() is None:
+            frontend_proc.terminate()
         print("Shutdown complete.")
 
 
