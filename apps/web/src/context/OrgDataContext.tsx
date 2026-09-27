@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react';
+import { ORGANIZATIONS, type OrganizationProfile } from '../components/layout/AppShell';
+import { addAuditLedgerRecord, saveStoredIncidents, localIncidents } from '../lib/api';
 
 export interface OrgPerson {
   id: string;
@@ -443,8 +445,11 @@ const SEED_GRAPH_EDGES: TwinGraphEdge[] = [
 // CONTEXT INTERFACE
 // ----------------------------------------------------
 
-interface OrgDataContextType {
+export interface OrgDataContextType {
   isLoaded: boolean;
+  currentOrg: OrganizationProfile;
+  setCurrentOrg: (org: OrganizationProfile) => void;
+  selectOrganizationById: (id: string) => void;
   datasetSummary: DatasetSummary;
   people: OrgPerson[];
   policies: OrgPolicy[];
@@ -456,6 +461,15 @@ interface OrgDataContextType {
   twinNodes: TwinGraphNode[];
   twinEdges: TwinGraphEdge[];
   
+  // Approvals & Governance State (shared across all views)
+  approvedPlaybooks: Record<string, { status: string; version: string; approver: string; approvedAt: string; notes?: string }>;
+  approvedPolicies: Record<string, any>;
+  resolvedIncidents: Record<string, any>;
+  isCandidateV2Approved: boolean;
+  recordPlaybookApproval: (orgId: string, version: string, approver: string, notes?: string) => void;
+  recordIncidentResolution: (incidentId: string, voucher: any) => void;
+  recordPolicyAmendment: (policyId: string, updates: Partial<OrgPolicy>) => void;
+
   // Ingestion Pipeline State
   pipelineStatus: 'idle' | 'running' | 'completed' | 'error';
   pipelineSteps: IngestionPipelineStep[];
@@ -481,7 +495,11 @@ interface OrgDataContextType {
 
 const OrgDataContext = createContext<OrgDataContextType | undefined>(undefined);
 
-export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const OrgDataProvider: React.FC<{ 
+  children: ReactNode;
+  currentOrg?: OrganizationProfile;
+  onSelectOrg?: (org: OrganizationProfile) => void;
+}> = ({ children, currentOrg: propOrg, onSelectOrg: propOnSelectOrg }) => {
   // Start with loaded state by default (or check localStorage) so existing views are populated immediately
   const [isLoaded, setIsLoaded] = useState<boolean>(() => {
     try {
@@ -492,16 +510,181 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   });
 
-  const [datasetSummary, setDatasetSummary] = useState<DatasetSummary>({
-    events: 5000,
-    decisions: 500,
-    customerCases: 120,
-    policies: 23,
-    people: 20,
-    workflows: 8,
-    systems: 12,
-    evidenceLinks: 850
+  // Current Organization management with persistence
+  const [localOrg, setLocalOrg] = useState<OrganizationProfile>(() => {
+    try {
+      const savedId = localStorage.getItem('forge_selected_org_id');
+      if (savedId) {
+        const match = ORGANIZATIONS.find(o => o.id === savedId);
+        if (match) return match;
+      }
+    } catch {}
+    return ORGANIZATIONS[0];
   });
+
+  const activeOrg = propOrg || localOrg;
+
+  const setCurrentOrg = (org: OrganizationProfile) => {
+    setLocalOrg(org);
+    try {
+      localStorage.setItem('forge_selected_org_id', org.id);
+    } catch {}
+    if (propOnSelectOrg) {
+      propOnSelectOrg(org);
+    }
+  };
+
+  const selectOrganizationById = (id: string) => {
+    const match = ORGANIZATIONS.find(o => o.id === id);
+    if (match) {
+      setCurrentOrg(match);
+    }
+  };
+
+  // Persistent Approvals & Governance State
+  const [approvedPlaybooks, setApprovedPlaybooks] = useState<Record<string, any>>(() => {
+    try {
+      const saved = localStorage.getItem('forge_playbook_approvals');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    // If Candidate V2 was previously approved in localStorage
+    const v2Approved = localStorage.getItem('forge_v2_approved') === 'true';
+    if (v2Approved) {
+      return {
+        'org-apexcloud': {
+          status: 'approved',
+          version: '2.0.0-rc1',
+          approver: localStorage.getItem('forge_v2_reviewer') || 'Sarah Jenkins (VP of Operations)',
+          approvedAt: localStorage.getItem('forge_v2_approved_at') || '2026-08-01 11:00 UTC',
+          notes: 'Approved following empirical verification in FORGE LAB (94% adversarial defense rate).'
+        }
+      };
+    }
+    return {};
+  });
+
+  const [resolvedIncidents, setResolvedIncidents] = useState<Record<string, any>>(() => {
+    try {
+      const saved = localStorage.getItem('forge_resolved_incidents');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {};
+  });
+
+  const [approvedPolicies, setApprovedPolicies] = useState<Record<string, any>>(() => {
+    try {
+      const saved = localStorage.getItem('forge_approved_policies');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {};
+  });
+
+  const isCandidateV2Approved = useMemo(() => {
+    try {
+      if (localStorage.getItem('forge_v2_approved') === 'true') return true;
+    } catch {}
+    return approvedPlaybooks[activeOrg.id]?.status === 'approved';
+  }, [approvedPlaybooks, activeOrg.id]);
+
+  const recordPlaybookApproval = (orgId: string, version: string, approver: string, notes?: string) => {
+    const update = {
+      ...approvedPlaybooks,
+      [orgId]: {
+        status: 'approved',
+        version,
+        approver,
+        approvedAt: new Date().toUTCString(),
+        notes: notes || 'Ratified and promoted to organizational memory.'
+      }
+    };
+    setApprovedPlaybooks(update);
+    try {
+      localStorage.setItem('forge_playbook_approvals', JSON.stringify(update));
+      localStorage.setItem('forge_v2_approved', 'true');
+      localStorage.setItem('forge_v2_approved_at', new Date().toISOString());
+      localStorage.setItem('forge_v2_reviewer', approver);
+    } catch {}
+
+    addAuditLedgerRecord({
+      incident_id: "CAND-V2",
+      action: "Candidate Playbook V2 Promoted to Production",
+      actor: approver,
+      policy: activeOrg.activePolicyId,
+      reference: "PB-OPS-V2-SYBIL-HARDENED",
+      status: "Cryptographically Verified",
+      amount: "$33,433 Fraud Mitigated"
+    });
+  };
+
+  const recordIncidentResolution = (incidentId: string, voucher: any) => {
+    const update = {
+      ...resolvedIncidents,
+      [incidentId]: voucher
+    };
+    setResolvedIncidents(update);
+    try {
+      localStorage.setItem('forge_resolved_incidents', JSON.stringify(update));
+    } catch {}
+
+    const inc = localIncidents.find((i: any) => (i.id || '').toLowerCase() === incidentId.toLowerCase());
+    if (inc) {
+      inc.status = 'Resolved';
+      inc.updated_at = 'Just now';
+      saveStoredIncidents();
+    }
+
+    addAuditLedgerRecord({
+      incident_id: incidentId,
+      action: "Settlement Voucher Approved & Disbursed",
+      actor: voucher.approver || 'Ananya R. (Operations Lead)',
+      policy: voucher.governing_policy || activeOrg.activePolicyId,
+      reference: voucher.voucher_reference,
+      status: "Verified",
+      amount: `$${(voucher.approved_amount || activeOrg.defaultClaim).toLocaleString()}`
+    });
+  };
+
+  const recordPolicyAmendment = (policyId: string, updates: Partial<OrgPolicy>) => {
+    const update = {
+      ...approvedPolicies,
+      [policyId]: {
+        ...updates,
+        amendedAt: new Date().toUTCString()
+      }
+    };
+    setApprovedPolicies(update);
+    try {
+      localStorage.setItem('forge_approved_policies', JSON.stringify(update));
+    } catch {}
+
+    addAuditLedgerRecord({
+      incident_id: policyId,
+      action: "Policy Threshold & Rule Amended",
+      actor: "Operations Lead",
+      policy: policyId,
+      reference: `AMEND-${Date.now().toString().slice(-6)}`,
+      status: "Verified",
+      amount: updates.maxRefundAuto ? `Limit: $${updates.maxRefundAuto}` : "Rule Amended"
+    });
+  };
+
+  // Dynamic Scale Summary based on active Organization
+  const datasetSummary = useMemo<DatasetSummary>(() => {
+    if (!isLoaded) {
+      return { events: 0, decisions: 0, customerCases: 0, policies: 0, people: 0, workflows: 0, systems: 0, evidenceLinks: 0 };
+    }
+    const scaleFactor = activeOrg.mrr / 45000;
+    return {
+      events: Math.round(5000 * Math.max(0.8, Math.min(2.5, scaleFactor))),
+      decisions: Math.round(500 * Math.max(0.7, Math.min(2.0, scaleFactor))),
+      customerCases: Math.round(120 * Math.max(0.7, Math.min(2.0, scaleFactor))),
+      policies: activeOrg.id === 'org-quantumsec' ? 45 : (activeOrg.id === 'org-fintech-prime' ? 32 : 23),
+      people: activeOrg.id === 'org-quantumsec' ? 40 : 20,
+      workflows: activeOrg.id === 'org-fintech-prime' ? 14 : 8,
+      systems: activeOrg.id === 'org-quantumsec' ? 20 : 12,
+      evidenceLinks: Math.round(850 * Math.max(0.8, Math.min(2.3, scaleFactor)))
+    };
+  }, [isLoaded, activeOrg]);
 
   const [people] = useState<OrgPerson[]>(SEED_PEOPLE);
   const [policies] = useState<OrgPolicy[]>(SEED_POLICIES);
@@ -509,9 +692,202 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [cases] = useState<OrgCase[]>(SEED_CASES);
   const [events] = useState<OrgEvent[]>(SEED_EVENTS);
   const [workflows] = useState<OrgWorkflow[]>(SEED_WORKFLOWS);
-  const [systems] = useState<string[]>(SEED_SYSTEMS);
-  const [twinNodes] = useState<TwinGraphNode[]>(SEED_GRAPH_NODES);
-  const [twinEdges] = useState<TwinGraphEdge[]>(SEED_GRAPH_EDGES);
+
+  // Dynamic Systems tailored to selected Organization
+  const systems = useMemo<string[]>(() => {
+    if (activeOrg.id === 'org-fintech-prime') {
+      return [
+        'SWIFT Clearing Gateway', 'High-Frequency Matching Engine', 'Stripe Banking API',
+        'PCI-DSS Compliance Ledger', 'Datadog Shard APM', 'Slack War Rooms (#payments-wire)',
+        'Snowflake Clearing Warehouse', 'Okta Dual-Key Auth'
+      ];
+    }
+    if (activeOrg.id === 'org-healthsync') {
+      return [
+        'HL7 FHIR Webhook Broker', 'Epic & Cerner EHR Integrator', 'HIPAA Audit Vault',
+        'PagerDuty Critical Telemetry', 'AWS GovCloud Bio-Cluster', 'Stripe Health Payouts',
+        'Zendesk Priority Health Queue'
+      ];
+    }
+    if (activeOrg.id === 'org-quantumsec') {
+      return [
+        'GovCloud Air-Gap Enclave', 'DoD IL5 Cryptographic Matrix', 'Air-Gapped Sovereign Node',
+        'Hardware Security Module (HSM)', 'Datadog Sovereign Telemetry', 'ITAR Access Control'
+      ];
+    }
+    if (activeOrg.id === 'org-omniretail') {
+      return [
+        'Shopify Plus Checkout Webhook', 'Magento Order Shard', 'Stripe Multi-Currency Gateway',
+        'Klaviyo Flash Retention Engine', 'Datadog Checkout Telemetry', 'Zendesk Retail Support'
+      ];
+    }
+    return SEED_SYSTEMS;
+  }, [activeOrg.id]);
+
+  // Dynamic Digital Twin Graph Nodes & Edges centered around active Organization
+  const twinNodes = useMemo<TwinGraphNode[]>(() => {
+    const nodes: TwinGraphNode[] = [
+      // 1. Root Organization Node
+      {
+        id: 'root_org',
+        label: `${activeOrg.name} (${activeOrg.tier})`,
+        type: 'system',
+        x: 520,
+        y: 10,
+        details: `${activeOrg.name} — Domain: ${activeOrg.domain}. Compliance: ${activeOrg.compliance}. MRR: $${activeOrg.mrr.toLocaleString()}. SLA: ${activeOrg.slaHours}h.`,
+        provenance: 'Organizational Master Ledger',
+        meta: { mrr: `$${activeOrg.mrr.toLocaleString()}`, sla: `${activeOrg.slaHours}h`, compliance: activeOrg.compliance, status: 'Active Production' }
+      },
+      // 2. Organization Governing Policy
+      {
+        id: 'pol_active',
+        label: `${activeOrg.activePolicyId}: ${activeOrg.activePlaybook.slice(0, 32)}...`,
+        type: 'policy',
+        x: 380,
+        y: 90,
+        details: `Governing operational threshold: Auto-refund up to $${activeOrg.defaultClaim}. Target SLA: ${activeOrg.slaHours} hours.`,
+        provenance: `${activeOrg.name} Governance Registry`,
+        meta: { policyId: activeOrg.activePolicyId, sla: `${activeOrg.slaHours}h`, threshold: `$${activeOrg.defaultClaim}` }
+      },
+      // 3. Organization Active Decision
+      {
+        id: 'dec_active',
+        label: `DEC-${activeOrg.id.toUpperCase().slice(4, 9)}: Active Claim ($${activeOrg.defaultClaim.toLocaleString()})`,
+        type: 'decision',
+        x: 380,
+        y: 230,
+        details: activeOrg.defaultSituation,
+        provenance: `${activeOrg.mossNamespace} (Decision DNA)`,
+        meta: { claim: `$${activeOrg.defaultClaim.toLocaleString()}`, confidence: 0.96 }
+      },
+      // 4. Candidate V2 Playbook Node (shows Ratified if approved)
+      {
+        id: 'cand_v2',
+        label: isCandidateV2Approved ? 'Candidate Playbook V2 (RATIFIED & ACTIVE)' : 'Candidate Playbook V2 (IN REVIEW)',
+        type: 'policy',
+        x: 680,
+        y: 90,
+        details: isCandidateV2Approved 
+          ? 'Synthesized compound exception EXC-FRAUD-SYBIL active in production. Subnet cluster entropy filter >= 0.45.'
+          : 'Under review: Candidate policy patch awaiting executive human sign-off.',
+        provenance: 'Executive Ratification Ledger',
+        meta: { status: isCandidateV2Approved ? 'APPROVED' : 'PENDING', defenseRate: '94%' }
+      },
+      // 5. Workflows
+      {
+        id: 'wf_01',
+        label: 'WF-DISC-001 (Observed Reality Path)',
+        type: 'workflow',
+        x: 680,
+        y: 230,
+        details: 'Empirical execution flow discovered across operational trace events.',
+        provenance: 'Process Mining Engine (Alpha Miner)',
+        meta: { conformance: '94%', avgDuration: `${activeOrg.slaHours * 30}m` }
+      },
+      // 6. People & Key Responders
+      {
+        id: 'usr_01',
+        label: 'Ananya R. (Operations Lead)',
+        type: 'person',
+        x: 120,
+        y: 120,
+        details: `Lead operator governing ${activeOrg.name} incident resolution and authority dispatch.`,
+        provenance: 'Slack war room logs + HR Org Matrix',
+        meta: { role: 'Operations Lead', assignedTenant: activeOrg.name }
+      },
+      {
+        id: 'usr_02',
+        label: 'Sarah Jenkins (VP Finance/Ops)',
+        type: 'person',
+        x: 120,
+        y: 280,
+        details: 'Executive authority reviewing policy amendments, threshold breaches, and Candidate V2.',
+        provenance: 'Executive Authorization Cockpit',
+        meta: { role: 'VP Operations', signoffLimit: '$10,000+' }
+      },
+      // 7. System Connectors
+      {
+        id: 'sys_01',
+        label: systems[0] || 'Stripe Billing System',
+        type: 'system',
+        x: 920,
+        y: 130,
+        details: `Core transaction settlement and voucher dispatch gateway for ${activeOrg.name}.`,
+        provenance: 'Live Webhook Telemetry',
+        meta: { uptime: '99.99%', integration: 'Webhook + REST' }
+      },
+      {
+        id: 'sys_02',
+        label: systems[1] || 'Datadog Shard APM',
+        type: 'system',
+        x: 920,
+        y: 260,
+        details: `Telemetry monitor streaming latency, error rates, and SLA adherence.`,
+        provenance: 'Datadog APM API',
+        meta: { status: 'Operational', latency: '1.2ms' }
+      },
+      // 8. Outcomes
+      {
+        id: 'out_01',
+        label: `OUT-01: Zero Churn & Certified SLA Adherence`,
+        type: 'outcome',
+        x: 920,
+        y: 420,
+        details: `${activeOrg.name} contract SLA maintained; CSAT 4.9/5.0 recorded.`,
+        provenance: 'Salesforce CRM Churn Analytics',
+        meta: { mrrSaved: `$${activeOrg.mrr.toLocaleString()}/mo`, csat: '4.9/5.0' }
+      },
+      // 9. Evidence
+      {
+        id: 'evi_01',
+        label: `EVID-001: P99 Telemetry Verification`,
+        type: 'evidence',
+        x: 380,
+        y: 380,
+        details: `Metric telemetry confirm outage duration and SLA breach boundary.`,
+        provenance: 'Datadog APM Shard',
+        meta: { p99: '2,840ms', verified: true }
+      }
+    ];
+
+    // If an incident is resolved, add the Voucher Node
+    const hasResolved = Object.keys(resolvedIncidents).length > 0;
+    if (hasResolved) {
+      nodes.push({
+        id: 'vch_resolved',
+        label: 'Certified Settlement Voucher (RESOLVED)',
+        type: 'outcome',
+        x: 680,
+        y: 380,
+        details: `Voucher issued and audited in compliance with ${activeOrg.activePolicyId}. Dual-key signoff verified.`,
+        provenance: 'Cryptographic Settlement Rail',
+        meta: { status: 'Verified', amount: `$${activeOrg.defaultClaim.toLocaleString()}` }
+      });
+    }
+
+    return nodes;
+  }, [activeOrg, isCandidateV2Approved, resolvedIncidents, systems]);
+
+  const twinEdges = useMemo<TwinGraphEdge[]>(() => {
+    const edges: TwinGraphEdge[] = [
+      { source: 'root_org', target: 'pol_active', label: 'governed_by', color: activeOrg.accentColor },
+      { source: 'root_org', target: 'cand_v2', label: 'evaluated_in', color: '#10b981' },
+      { source: 'pol_active', target: 'dec_active', label: 'authorizes', color: '#fbbf24' },
+      { source: 'usr_01', target: 'dec_active', label: 'executed_by', color: '#38bdf8' },
+      { source: 'usr_02', target: 'cand_v2', label: 'ratifies', color: '#a855f7' },
+      { source: 'dec_active', target: 'wf_01', label: 'routed_through', color: '#06b6d4' },
+      { source: 'dec_active', target: 'sys_01', label: 'dispatches_via', color: '#818cf8' },
+      { source: 'sys_02', target: 'dec_active', label: 'telemetry_feed', color: '#64748b' },
+      { source: 'evi_01', target: 'dec_active', label: 'grounded_in', color: '#10b981' },
+      { source: 'wf_01', target: 'out_01', label: 'results_in', color: '#34d399' }
+    ];
+
+    if (Object.keys(resolvedIncidents).length > 0) {
+      edges.push({ source: 'dec_active', target: 'vch_resolved', label: 'produces_voucher', color: '#10b981' });
+    }
+
+    return edges;
+  }, [activeOrg, resolvedIncidents]);
 
   // Ingestion Pipeline State
   const [pipelineStatus, setPipelineStatus] = useState<'idle' | 'running' | 'completed' | 'error'>(
@@ -521,22 +897,33 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
   const initialSteps: IngestionPipelineStep[] = useMemo(() => [
     { id: '1', label: 'Files received & validated', description: 'Checking checksums, structure, and UTF-8 encoding', status: isLoaded ? 'completed' : 'pending' },
     { id: '2', label: 'Schema detected & mapped', description: 'AI inference identifying timestamps, actors, and keys', status: isLoaded ? 'completed' : 'pending' },
-    { id: '3', label: 'Events extracted (5,000 records)', description: 'Parsing system interactions across Zendesk, Slack, Stripe', status: isLoaded ? 'completed' : 'pending' },
-    { id: '4', label: 'Decisions identified (500 decisions)', description: 'Compiling atomic units of judgment and authority limits', status: isLoaded ? 'completed' : 'pending' },
-    { id: '5', label: 'Policies indexed (23 active rules)', description: 'Extracting SLA standards and threshold criteria', status: isLoaded ? 'completed' : 'pending' },
-    { id: '6', label: 'Customer cases linked (120 cases)', description: 'Associating ticket outcomes with financial records', status: isLoaded ? 'completed' : 'pending' },
-    { id: '7', label: 'Evidence relationships created (850 links)', description: 'Synthesizing causal connections and provenance paths', status: isLoaded ? 'completed' : 'pending' },
+    { id: '3', label: `Events extracted (${datasetSummary.events.toLocaleString()} records)`, description: `Parsing system interactions across ${systems.slice(0, 3).join(', ')}`, status: isLoaded ? 'completed' : 'pending' },
+    { id: '4', label: `Decisions identified (${datasetSummary.decisions} decisions)`, description: 'Compiling atomic units of judgment and authority limits', status: isLoaded ? 'completed' : 'pending' },
+    { id: '5', label: `Policies indexed (${datasetSummary.policies} active rules)`, description: 'Extracting SLA standards and threshold criteria', status: isLoaded ? 'completed' : 'pending' },
+    { id: '6', label: `Customer cases linked (${datasetSummary.customerCases} cases)`, description: 'Associating ticket outcomes with financial records', status: isLoaded ? 'completed' : 'pending' },
+    { id: '7', label: `Evidence relationships created (${datasetSummary.evidenceLinks} links)`, description: 'Synthesizing causal connections and provenance paths', status: isLoaded ? 'completed' : 'pending' },
     { id: '8', label: 'Organizational Digital Twin model updated', description: 'Real-time graph compiled into memory buffer', status: isLoaded ? 'completed' : 'pending' }
-  ], [isLoaded]);
+  ], [isLoaded, datasetSummary, systems]);
 
   const [pipelineSteps, setPipelineSteps] = useState<IngestionPipelineStep[]>(initialSteps);
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(isLoaded ? 8 : 0);
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; size: number; type: string; classification: string }[]>([
-    { name: 'apexcloud_events_q3.csv', size: 2649221, type: 'CSV', classification: 'Event Logs' },
-    { name: 'executive_decisions_ledger.json', size: 323560, type: 'JSON', classification: 'Decision Records' },
-    { name: 'enterprise_support_cases.xlsx', size: 28955, type: 'XLSX', classification: 'Customer Cases' },
-    { name: 'confluence_sop_policies.docx', size: 12067, type: 'DOCX', classification: 'Policies / SOPs' }
-  ]);
+
+  // Files staged for the currently active organization
+  const defaultUploadedFiles = useMemo(() => {
+    const slug = activeOrg.id.replace('org-', '');
+    return [
+      { name: `${slug}_events_telemetry.csv`, size: 2649221, type: 'CSV', classification: 'Event Logs' },
+      { name: `${slug}_decisions_ledger.json`, size: 323560, type: 'JSON', classification: 'Decision Records' },
+      { name: `${slug}_support_cases.xlsx`, size: 28955, type: 'XLSX', classification: 'Customer Cases' },
+      { name: `${slug}_sop_policies.docx`, size: 12067, type: 'DOCX', classification: 'Policies / SOPs' }
+    ];
+  }, [activeOrg.id]);
+
+  const [customUploadedFiles, setCustomUploadedFiles] = useState<{ name: string; size: number; type: string; classification: string }[]>([]);
+
+  const uploadedFiles = useMemo(() => {
+    return [...defaultUploadedFiles, ...customUploadedFiles];
+  }, [defaultUploadedFiles, customUploadedFiles]);
 
   const [schemaFields, setSchemaFields] = useState<SchemaMappingField[]>([
     { sourceField: 'timestamp', detectedType: 'ISO 8601 DateTime', targetEntity: 'Event Time', sampleValue: '2026-09-24T14:02:11Z', status: 'matched' },
@@ -589,17 +976,6 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     setCurrentStepIndex(stepsCopy.length);
     setPipelineStatus('completed');
     setIsLoaded(true);
-
-    setDatasetSummary({
-      events: 5000,
-      decisions: 500,
-      customerCases: 120,
-      policies: 23,
-      people: 20,
-      workflows: 8,
-      systems: 12,
-      evidenceLinks: 850
-    });
   };
 
   // Upload files handler with validation and error handling
@@ -658,7 +1034,7 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
       };
     });
 
-    setUploadedFiles(prev => [...prev, ...classified]);
+    setCustomUploadedFiles(prev => [...prev, ...classified]);
 
     // Update schema mappings based on files
     const sampleField = filesArray[0].name.toLowerCase().includes('json') ? 'event_payload' : 'row_data';
@@ -692,16 +1068,7 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     setPipelineStatus('idle');
     setCurrentStepIndex(0);
     setPipelineSteps(initialSteps.map(s => ({ ...s, status: 'pending' as const })));
-    setDatasetSummary({
-      events: 0,
-      decisions: 0,
-      customerCases: 0,
-      policies: 0,
-      people: 0,
-      workflows: 0,
-      systems: 0,
-      evidenceLinks: 0
-    });
+    setCustomUploadedFiles([]);
   };
 
   // Moss Question-Answering over the ingested organization
@@ -714,31 +1081,36 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (lower.includes('high-value') || lower.includes('refund') || lower.includes('longer') || lower.includes('slow')) {
       return {
         question,
-        answer: "High-value refund cases take significantly longer (avg 48.2 hours vs 65 minutes) because Documented Policy POL-OPS-012 mandates a 4-tier Director Review Queue in Jira for any request exceeding $500.00. In 87% of urgent enterprise outage cases, senior staff circumvent this bottleneck via private Slack war rooms to issue direct credits, whereas non-escalated cases sit idle in the manager queue.",
+        answer: `For ${activeOrg.name} (${activeOrg.domain}), high-value refund cases take significantly longer (avg 48.2 hours vs ${activeOrg.slaHours * 30} minutes) because Documented Policy ${activeOrg.activePolicyId} mandates an escalation queue for claims exceeding $${activeOrg.defaultClaim}. In 87% of urgent enterprise disruption cases, staff circumvent this queue via war-room bypass, whereas non-escalated cases sit idle awaiting manager review.`,
         groundedFacts: [
-          "Documented Policy POL-OPS-012 requires Director sign-off for amounts > $500",
-          "Manager review queue has a mean latency of 2,400 minutes (40 hours)",
-          "87% of enterprise outage traces diverge via #incidents-war-room bypass",
-          "Average CSAT is 4.9/5.0 for bypassed cases vs 2.1/5.0 for queue-delayed cases"
+          `Documented Policy ${activeOrg.activePolicyId} requires Director sign-off for amounts > $${activeOrg.defaultClaim}`,
+          `Target SLA for ${activeOrg.tier} is ${activeOrg.slaHours} hours`,
+          `87% of enterprise outage traces diverge via operational bypass consensus`,
+          `Average CSAT is 4.9/5.0 for bypassed cases vs 2.1/5.0 for queue-delayed cases`,
+          `Compliance framework: ${activeOrg.compliance}`
         ],
         evidenceCards: [
-          { id: 'EVID-001', source: 'Slack #incidents-war-room (msg-9921)', snippet: 'VP Authorized fast-track credit discretion up to $1,500 during Sev-1 outages to prevent client churn.', relevanceScore: 0.98 },
-          { id: 'EVID-002', source: 'POL-OPS-012 Clause 4.2 (Confluence)', snippet: 'All refund or credit requests exceeding $500.00 require Tier-3 Manager approval in Jira prior to execution.', relevanceScore: 0.94 },
-          { id: 'EVID-003', source: 'Jira Service Management Telemetry', snippet: 'Average ticket dwell time in Manager Queue: 41.8 hours across 85 sample cases in Q3.', relevanceScore: 0.91 }
+          { id: 'EVID-001', source: `War Room Consensus Log (${activeOrg.mossNamespace})`, snippet: `Authorized fast-track credit discretion up to $${activeOrg.defaultClaim * 2} during Sev-1 outages to prevent churn.`, relevanceScore: 0.98 },
+          { id: 'EVID-002', source: `${activeOrg.activePolicyId} Standard`, snippet: `All refund or credit requests exceeding $${activeOrg.defaultClaim} require Tier-3 Manager review prior to execution.`, relevanceScore: 0.94 },
+          { id: 'EVID-003', source: 'Service Management Telemetry', snippet: `Average ticket dwell time in review queue: 41.8 hours across sample cases in Q3.`, relevanceScore: 0.91 }
         ],
         latencyMs: 1.2
       };
     }
 
     if (lower.includes('sybil') || lower.includes('bot') || lower.includes('attack') || lower.includes('fraud')) {
+      const v2StatusText = isCandidateV2Approved 
+        ? "Candidate V2 has been APPROVED & RATIFIED into active production memory."
+        : "Candidate V2 is currently PENDING executive sign-off in the Governance Cockpit.";
       return {
         question,
-        answer: "The 100-bot Sybil burst exploit exploited a blind spot in Playbook V1's static threshold ($500 limit). Coordinated bots requested $485-$499.50 within a 45-second burst. Candidate V2 mitigated this with the compound exception EXC-FRAUD-SYBIL, requiring subnet cluster entropy >= 0.45, intercepting 94% of malicious requests with 0% false positives on verified VIPs.",
+        answer: `The 100-bot Sybil burst exploit exploited a blind spot in Playbook V1's static threshold ($500 limit). Coordinated bots requested $485-$499.50 within a 45-second burst. Candidate V2 mitigates this with the compound exception EXC-FRAUD-SYBIL, requiring subnet cluster entropy >= 0.45, intercepting 94% of malicious requests with 0% false positives on verified VIPs. ${v2StatusText}`,
         groundedFacts: [
           "Static single-predicate threshold failed to consider request velocity or IP subnet entropy",
           "100 distributed bots issued claims between $485.00 and $499.50",
           "Candidate V2 synthesized rule: IF amount < 500 AND subnet_cluster_entropy >= 0.45",
-          "Zero false positives observed on 1,420 regression test cases"
+          `Production Status: ${isCandidateV2Approved ? 'RATIFIED & ENFORCED' : 'AWAITING APPROVAL'}`,
+          `Target Organization: ${activeOrg.name}`
         ],
         evidenceCards: [
           { id: 'EVID-007', source: 'Red Team Benchmark Matrix (Synthetic)', snippet: '100 synthetic bots launched from 198.51.100.0/24 subnet during simulated latency spike.', relevanceScore: 0.99 },
@@ -751,16 +1123,17 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     // Default grounded answer
     return {
       question,
-      answer: `Analysis of 5,000 ingested events across ${systems.length} connected enterprise systems indicates that decision authority in this organization is bifurcated: formal standard operating procedures mandate 48h turnaround queues, but operational engineers rely on tacit Slack war-room precedents to maintain SLA compliance.`,
+      answer: `Analysis of ${datasetSummary.events.toLocaleString()} ingested events for ${activeOrg.name} across ${systems.length} connected systems indicates that decision authority is bifurcated: formal procedures mandate ${activeOrg.slaHours * 24}h turnaround queues, but operational engineers rely on tacit precedents to maintain the ${activeOrg.slaHours}h contract SLA.`,
       groundedFacts: [
-        `5,000 total trace events analyzed across ${systems.slice(0, 4).join(', ')}`,
-        `500 decisions compiled with 94% average provenance grounding`,
-        `23 active corporate policies evaluated against observed behavior`,
-        `Conformance rate between documented vs discovered reality measured at 38%`
+        `${datasetSummary.events.toLocaleString()} total trace events analyzed across ${systems.slice(0, 4).join(', ')}`,
+        `${datasetSummary.decisions} decisions compiled with 94% average provenance grounding`,
+        `${datasetSummary.policies} active corporate policies evaluated against observed behavior`,
+        `Compliance certification: ${activeOrg.compliance}`,
+        `Candidate V2 status: ${isCandidateV2Approved ? 'RATIFIED & ACTIVE' : 'PENDING'}`
       ],
       evidenceCards: [
-        { id: 'EVID-GEN-01', source: 'Organizational Memory Store', snippet: 'Reconstructed 120 customer incident traces across Customer Engineering, Support Ops, and Finance.', relevanceScore: 0.89 },
-        { id: 'EVID-GEN-02', source: 'Stripe Telemetry Logs', snippet: 'Verified 500 financial settlement events totaling $184,500 in approved customer vouchers.', relevanceScore: 0.85 }
+        { id: 'EVID-GEN-01', source: `${activeOrg.name} Organizational Memory Store`, snippet: `Reconstructed ${datasetSummary.customerCases} customer incident traces with ${activeOrg.compliance} compliance backing.`, relevanceScore: 0.89 },
+        { id: 'EVID-GEN-02', source: `${systems[0]} Telemetry`, snippet: `Verified financial settlement events totaling $${(activeOrg.mrr * 1.5).toLocaleString()} in approved customer vouchers.`, relevanceScore: 0.85 }
       ],
       latencyMs: 1.4
     };
@@ -778,23 +1151,23 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     const isApprovalRequired = params.requireManagerApproval;
 
     return {
-      scenario_name: `Rule Change: Threshold $${params.thresholdAmount} | Manager Req: ${isApprovalRequired}`,
+      scenario_name: `${activeOrg.name} Rule Change: Threshold $${params.thresholdAmount} | Manager Req: ${isApprovalRequired}`,
       disclaimer: "SIMULATED SCENARIO ONLY — Based on 1,000 Monte Carlo discrete event simulations over ingested traces. Does not guarantee causal determinism in live production.",
       current_reality: {
-        auto_approve_threshold: 500,
-        avg_cycle_time_hours: 18.4,
-        auto_approved_count: 380,
-        manager_bottleneck_hours: 24.2,
-        estimated_annual_cost: "$1.85M",
+        auto_approve_threshold: activeOrg.defaultClaim,
+        avg_cycle_time_hours: activeOrg.slaHours * 2.5,
+        auto_approved_count: Math.round(datasetSummary.decisions * 0.75),
+        manager_bottleneck_hours: activeOrg.slaHours * 12,
+        estimated_annual_cost: `$${(activeOrg.mrr * 0.4).toFixed(1)}M`,
         fraud_risk_score: "12.4% (Baseline)",
         csat_score: "3.8 / 5.0"
       },
       forked_reality: {
         auto_approve_threshold: params.thresholdAmount,
-        avg_cycle_time_hours: isApprovalRequired ? 28.5 : (isThresholdHigh ? 0.8 : 4.2),
-        auto_approved_count: isThresholdHigh ? 475 : 320,
-        manager_bottleneck_hours: isApprovalRequired ? 42.0 : 4.5,
-        estimated_annual_cost: isThresholdHigh ? "$2.45M" : "$1.40M",
+        avg_cycle_time_hours: isApprovalRequired ? activeOrg.slaHours * 4.0 : (isThresholdHigh ? 0.8 : activeOrg.slaHours),
+        auto_approved_count: isThresholdHigh ? Math.round(datasetSummary.decisions * 0.9) : Math.round(datasetSummary.decisions * 0.6),
+        manager_bottleneck_hours: isApprovalRequired ? activeOrg.slaHours * 18 : activeOrg.slaHours * 0.5,
+        estimated_annual_cost: isThresholdHigh ? `$${(activeOrg.mrr * 0.55).toFixed(1)}M` : `$${(activeOrg.mrr * 0.3).toFixed(1)}M`,
         fraud_risk_score: isThresholdHigh ? "18.2% (Elevated without V2 filter)" : "4.1% (Low)",
         csat_score: isApprovalRequired ? "2.9 / 5.0 (Delays)" : "4.8 / 5.0 (Accelerated)"
       },
@@ -811,6 +1184,9 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const value = {
     isLoaded,
+    currentOrg: activeOrg,
+    setCurrentOrg,
+    selectOrganizationById,
     datasetSummary,
     people,
     policies,
@@ -821,6 +1197,13 @@ export const OrgDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     systems,
     twinNodes,
     twinEdges,
+    approvedPlaybooks,
+    approvedPolicies,
+    resolvedIncidents,
+    isCandidateV2Approved,
+    recordPlaybookApproval,
+    recordIncidentResolution,
+    recordPolicyAmendment,
     pipelineStatus,
     pipelineSteps,
     currentStepIndex,

@@ -6,6 +6,7 @@
 
 **Observe decisions. Attack them. Learn from failure.**
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frshamith777-cpu%2Fforge-x)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -15,7 +16,7 @@
 [![Tests](https://img.shields.io/badge/Unit%20%26%20Integration-47%20Passed-10B981?style=for-the-badge&logo=pytest&logoColor=white)](https://pytest.org/)
 [![Challenge](https://img.shields.io/badge/YC%20Fall%202026-Moss%20Sprint-FF6600?style=for-the-badge&logo=ycombinator&logoColor=white)](https://www.ycombinator.com/)
 
-[**Live Operations**](http://localhost:5173/app) • [**Active Decision Hot Path**](http://localhost:5173/app/decide) • [**Red Team Cockpit**](http://localhost:5173/app/redteam) • [**Architecture Specs**](./docs/)
+[**Live Operations**](http://localhost:5173/app) • [**Active Decision Hot Path**](http://localhost:5173/app/decide) • [**Red Team Cockpit**](http://localhost:5173/app/redteam) • [**Data Ingestion**](http://localhost:5173/app/data-ingestion) • [**Audit Ledger**](http://localhost:5173/app/audit)
 
 </div>
 
@@ -30,10 +31,11 @@ Enterprise AI automation consistently breaks because organizations operate on tw
 When conventional AI agents make decisions solely based on documentation, they hallucinate, breach real-world constraints, and succumb to adversarial manipulation.
 
 **FORGE X** solves this fundamentally:
-* **Compiles Decision Genomes**: Captures organizational judgment into atomic, 17-field auditable units with full provenance.
+* **Multi-Tenant Enterprise Data Fabric**: Instantaneous context synchronization across 5 Fortune 500 verticals. Selecting any dataset binds **all views, digital twins, incident queues, candidate policies, and audit trails** around that target organization.
+* **Compiles Decision Genomes**: Captures organizational judgment into atomic, 17-field auditable units with complete causal provenance.
 * **Sub-10ms Synchronous Hot Path**: Grounds operational decisions in milliseconds using the **Moss Zero-Latency Retrieval Fabric**.
-* **Continuous Adversarial Hardening**: Asynchronously attacks its own decisions with synthetic red-team vectors (such as 100-identity Sybil swarms).
-* **Self-Healing Playbooks**: Quarantines failure modes, generates hardened Candidate Playbooks (V1 $\to$ V2), validates them under strict temporal isolation ($t \le T$), and awaits human governance before promotion.
+* **Continuous Adversarial Hardening**: Asynchronously attacks its own decisions with synthetic red-team vectors (such as a 100-identity coordinated Sybil swarm).
+* **Self-Healing Playbooks & Cryptographic Audit Trails**: Quarantines failure modes, generates hardened Candidate Playbooks (V1 $\to$ V2), validates them under strict temporal isolation ($t \le T$), and seals all human-in-the-loop approvals into persistent cryptographic settlement vouchers.
 
 ---
 
@@ -75,7 +77,39 @@ flowchart TD
 
 ---
 
-## 🔄 End-to-End Application Flow
+## 🌐 Unified Multi-Tenant Data Fabric & State Persistence
+
+In FORGE X, data is never fragmented. When you select an enterprise dataset—whether from the top global switcher or the **Data Ingestion** studio—**every single screen, chart, pipeline, and ledger synchronizes around that specific data**:
+
+```mermaid
+flowchart LR
+    Selector["Tenant Selector / Data Ingestion\n(ApexCloud / FinTech / HealthSync / OmniRetail / QuantumSec)"] --> Fabric["OrgDataContext\nUnified State Engine"]
+    Fabric --> V1["Home Workspace & MRR SLAs"]
+    Fabric --> V2["Process Archaeology & Heuristics"]
+    Fabric --> V3["Incidents Cockpit & SLA Triage"]
+    Fabric --> V4["Live Decision Hot Path (<10ms)"]
+    Fabric --> V5["Candidate Playbook V2 & Contradictions"]
+    Fabric --> V6["Governance Policies & Amendments"]
+    Fabric --> V7["Audit Center & Settlement Vouchers"]
+```
+
+### 1. The 5 Enterprise Tenants
+| Enterprise Organization | Industry & Scale | Guaranteed SLA | Compliance Framework | Active Policy Code | Key Focus |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **ApexCloud Global** | Enterprise Cloud ($45k MRR) | **2.0 Hours** | SOC2 Type II | `POL-OPS-012` | Gateway outages & cloud credits |
+| **FinTech Prime** | Payments & Clearing ($120k MRR) | **1.0 Hour** | PCI-DSS Level 1 | `POL-FIN-102` | Disputed wire transfers & settlements |
+| **HealthSync Bio** | Healthcare EHR ($85k MRR) | **0.5 Hours** | HIPAA & FDA 21 CFR | `POL-BIO-901` | Critical patient EHR uptime |
+| **OmniRetail Logistics** | Global Supply Chain ($30k MRR) | **4.0 Hours** | GDPR & CCPA | `POL-RET-404` | 3PL routing failures & delivery credits |
+| **QuantumSec Defense** | GovCloud AI ($250k MRR) | **0.25 Hours** | FedRAMP High | `POL-DEF-001` | Zero-trust enclave breaches |
+
+### 2. Universal Approval & Ledger Persistence
+* **Candidate V2 Approvals**: When an operator approves a hardened candidate playbook in `/app/candidate`, the approval is cryptographically stamped with operator ID and timestamp, immediately updating the Digital Twin and recording a ratified amendment into the **Audit Center**.
+* **Incident Resolutions & Vouchers**: Resolving an incident in `/app/incidents` generates a certified **Settlement Voucher** with SHA-256 integrity seal that persists across route changes and browser refreshes (`localStorage` backed).
+* **Policy Amendments**: Modifying or ratifying an SOP rule in `/app/policies` updates all downstream decision gates in real-time.
+
+---
+
+## 🔄 End-to-End Decision Lifecycle
 
 ```mermaid
 sequenceDiagram
@@ -120,8 +154,8 @@ sequenceDiagram
 
 ### 1. Active Decision Intake (Synchronous Hot Path)
 * **Sub-10ms Moss Retrieval**: Rapid vector matching against governing operational policies, precedent claims, and escalation thresholds.
-* **Deterministic Governance**: Returns transparent reasoning, policy citations (`POL-OPS-012`), and full candidate action evaluations.
-* **Enterprise Frosted Glass**: Ultra-crisp high-contrast typography powered by `Inter` and `Plus Jakarta Sans`.
+* **Deterministic Governance**: Returns transparent reasoning, policy citations (`POL-OPS-012`), and candidate action evaluations.
+* **Real-time Latency Budget**: Emits full timing breakdown (Moss lookup: 2.1ms, constraint validation: 1.8ms, genome generation: 3.5ms).
 
 <div align="center">
 <img src="./docs/images/decide_view.png" alt="Active Decision View" width="900"/>
@@ -131,11 +165,6 @@ sequenceDiagram
 
 ### 2. Multi-Organization Switcher & Governance Isolation
 Switch seamlessly between 5 enterprise organizations, each maintaining its own **Moss Namespace**, **MRR Profile**, **SLA Commitment**, and **Governing Policy Genome**:
-* **ApexCloud Global**: Enterprise Cloud Infrastructure ($45k MRR, 2h SLA, SOC2 Type II, Moss: `org-apexcloud-production`)
-* **FinTech Prime**: High-Frequency Payments & Clearing ($120k MRR, 1h SLA, PCI-DSS Level 1, Moss: `org-fintech-prime-core`)
-* **HealthSync Bio**: Healthcare EHR Cloud Platform ($85k MRR, 0.5h SLA, HIPAA + FDA 21 CFR, Moss: `org-healthsync-hipaa`)
-* **OmniRetail Logistics**: Global E-Commerce & Supply Chain ($30k MRR, 4h SLA, GDPR + CCPA, Moss: `org-omniretail-edge`)
-* **QuantumSec Defense**: GovCloud & Defense AI Infrastructure ($250k MRR, 0.25h SLA, FedRAMP High, Moss: `org-quantumsec-govcloud`)
 
 <div align="center">
 <img src="./docs/images/fintech_prime_decision.png" alt="FinTech Prime Decision Context" width="445"/>
@@ -160,7 +189,13 @@ Switch seamlessly between 5 enterprise organizations, each maintaining its own *
 
 ---
 
-### 4. Organizational Time Machine & Strict Zero Future Leakage
+### 4. Process Archaeology & Heuristic Mining
+* **Documented vs Observed Conformance**: Mines raw execution logs to uncover shadow workflows, unapproved overrides, and undocumented emergency bypasses.
+* **Bottleneck Discovery**: Identifies critical friction points across systems with live trace replay.
+
+---
+
+### 5. Organizational Time Machine & Strict Zero Future Leakage
 * **Historical State Reconstruction**: Reconstructs exactly what policies, incidents, and signals the organization knew at any given historical moment $T$.
 * **Temporal Isolation Guard**: Strictly filters queries with `knowledge.created_at <= T`. Future incident outcomes, post-mortem reports, and subsequent policy revisions are cryptographically masked to eliminate hindsight bias during evaluation.
 
@@ -235,54 +270,32 @@ FORGE X adheres strictly to the competition retrieval honesty protocol:
 
 ---
 
-## 📂 Repository Structure
+## 🚀 Deployment & Installation
 
-```text
-YC Moss/
-├── apps/
-│   ├── api/                     # FastAPI Backend Services
-│   │   ├── main.py              # Application Gateway & REST Endpoints
-│   │   ├── state.py             # In-memory datasets (5k events, 500 decisions, 30 policies)
-│   │   └── mock_data.py         # Realistic enterprise incident & signal generator
-│   └── web/                     # React 19 + Vite Frontend Application
-│       ├── src/
-│       │   ├── App.tsx          # Master routing & organization context state
-│       │   ├── components/      # UI Views & Design System
-│       │   │   ├── layout/      # AppShell, Organization Switcher, Governance Dossier
-│       │   │   ├── views/       # Decide, RedTeam, CandidateV2, Lab, Memory, Incidents
-│       │   │   └── ...
-│       │   └── index.css        # Glassmorphism design tokens & Inter typography
-├── packages/
-│   ├── events/                  # Non-blocking async event bus (bus.py)
-│   ├── retrieval/               # Provider-agnostic Moss semantic retrieval fabric
-│   ├── decision_genome/         # 17-field decision traces & contradiction engines
-│   ├── simulation/              # Monte Carlo engine & counterfactual "Fork Reality"
-│   └── domain/                  # Domain contracts & governance schemas
-├── scripts/
-│   └── start_system.py          # Unified single-command launcher with health checking
-├── tests/
-│   ├── unit/                    # Unit tests for agents, contracts, and genomes
-│   └── integration/             # End-to-end API & competition endpoint tests
-└── docs/
-    └── images/                  # High-resolution architectural & UI assets
-```
+### Option A: Zero-Config Deployment on Vercel
+
+FORGE X is pre-configured with root-level `vercel.json` and client-side fallbacks for instant global deployment:
+
+1. Click the **Deploy with Vercel** button above or import the GitHub repository in [Vercel](https://vercel.com/new).
+2. Leave settings at default (Vercel automatically detects the Vite build output).
+3. The platform will build and serve the application globally with full multi-tenant dataset simulation, interactive red-team attacks, and state persistence.
 
 ---
 
-## 🚀 Quickstart & Installation
+### Option B: Local Setup with Unified System Runner
 
-### Prerequisites
+#### Prerequisites
 * **Python**: 3.11 or higher
 * **Node.js**: 18.0 or higher
 * **npm**: 9.0 or higher
 
-### 1. Clone the Repository
+#### 1. Clone the Repository
 ```bash
 git clone https://github.com/rshamith777-cpu/forge-x.git
 cd forge-x
 ```
 
-### 2. Install Dependencies
+#### 2. Install Dependencies
 ```bash
 # Install Python backend dependencies
 pip install -r requirements.txt
@@ -291,9 +304,7 @@ pip install -r requirements.txt
 npm --prefix apps/web install
 ```
 
-### 3. Launch with Unified System Runner
-FORGE X includes an automated system launcher that handles environment checks, backend boot, and frontend startup:
-
+#### 3. Launch with Unified Runner
 ```bash
 python scripts/start_system.py
 ```
@@ -302,9 +313,7 @@ python scripts/start_system.py
 * **Interactive API Documentation (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 * **Backend Health Check**: [http://localhost:8000/health](http://localhost:8000/health)
 
-### 4. Running the Test Suite
-Execute the comprehensive test suite verifying all 47 unit and integration tests:
-
+#### 4. Run Test Suite
 ```bash
 pytest tests/unit tests/integration -v
 ```
@@ -316,13 +325,17 @@ pytest tests/unit tests/integration -v
 | Module | Route | Operational Capability |
 | :--- | :--- | :--- |
 | **Cinematic Landing** | `/` | Product manifesto, architecture overview, and entrance to operations. |
+| **Home Workspace** | `/app` | Executive dashboard, tenant KPI cards, SLA health, and active MRR tier. |
 | **Active Decision** | `/app/decide` | **Hot Path:** Sub-10ms Moss retrieval, customer tier selection, entropy sliders, live decision execution. |
+| **Data Ingestion** | `/app/data-ingestion` | Ingest enterprise evidence files, auto-detect schemas, and switch target tenant datasets. |
+| **Process Archaeology** | `/app/observe` | Uncover undocumented heuristics vs official SOPs with conformance mining. |
 | **Red Team Cockpit** | `/app/redteam` | **Stress-Test:** Coordinated 100-bot Sybil burst attack against Playbook V1 vs Hardened V2. |
 | **Candidate Playbook V2** | `/app/candidate` | Human-in-the-loop governance gate, contradiction analysis, and playbook signoff. |
+| **Incidents Forensics** | `/app/incidents` | Live operational triage, SLA dispute handling, and voucher issuance. |
+| **Policies Ledger** | `/app/policies` | Documented organizational rules vs observed heuristics explorer. |
+| **Audit Center** | `/app/audit` | Cryptographic ledger of all decisions, approved playbooks, and settlement vouchers. |
 | **FORGE LAB** | `/app/forgelab` | Empirical benchmark cockpit running all 6 validation gates. |
 | **Organizational Memory** | `/app/memory` | Immutable ledger of Decision Genomes and Moss-indexed vector spaces. |
-| **Incidents Center** | `/app/incidents` | Live operational triage, deep-link routing, and incident forensics. |
-| **Policies Ledger** | `/app/policies` | Documented organizational rules vs observed heuristics explorer. |
 
 ---
 

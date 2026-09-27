@@ -4,19 +4,24 @@ import {
   Zap, AlertTriangle, Activity, FileText, ExternalLink, RefreshCw
 } from 'lucide-react';
 import { useOrgData } from '../../context/OrgDataContext';
+import { type OrganizationProfile } from '../layout/AppShell';
 
 export interface ObserveWorkflowViewProps {
   onNavigateToDecide?: () => void;
   onNavigateToTwin?: () => void;
   onNavigateToIngestion?: () => void;
+  currentOrg?: OrganizationProfile;
 }
 
 export const ObserveWorkflowView: React.FC<ObserveWorkflowViewProps> = ({
   onNavigateToDecide,
   onNavigateToTwin,
-  onNavigateToIngestion
+  onNavigateToIngestion,
+  currentOrg: propOrg
 }) => {
-  const { isLoaded, workflows, datasetSummary, generateDemoOrganization } = useOrgData();
+  const orgData = useOrgData();
+  const activeOrg = propOrg || orgData.currentOrg;
+  const { isLoaded, workflows, datasetSummary, generateDemoOrganization } = orgData;
 
   const [selectedWorkflowIndex, setSelectedWorkflowIndex] = useState<number>(0);
   const [highlightDeviations, setHighlightDeviations] = useState<boolean>(true);
@@ -185,6 +190,60 @@ export const ObserveWorkflowView: React.FC<ObserveWorkflowViewProps> = ({
             <span>Decision DNA</span>
             <ArrowRight size={14} />
           </button>
+        </div>
+      </div>
+
+      {/* Active Organization Context Workflow Banner */}
+      <div style={{
+        background: 'rgba(6, 12, 24, 0.75)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        borderRadius: '12px',
+        padding: '12px 18px',
+        marginBottom: '20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px',
+        backdropFilter: 'blur(16px)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '6px',
+            background: activeOrg.avatarBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '11px',
+            fontWeight: 800,
+            color: '#fff'
+          }}>
+            {activeOrg.name.charAt(0)}
+          </div>
+          <div>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>
+              Process Archaeology: <span style={{ color: activeOrg.accentColor }}>{activeOrg.name}</span>
+            </span>
+            <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '8px' }}>
+              Operational Domain: {activeOrg.domain} • Primary Policy: <strong style={{ color: '#e2e8f0' }}>{activeOrg.activePolicyId}</strong>
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{
+            fontSize: '11px',
+            fontFamily: "'JetBrains Mono', monospace",
+            padding: '4px 10px',
+            borderRadius: '6px',
+            background: 'rgba(56, 189, 248, 0.15)',
+            color: '#38bdf8',
+            border: '1px solid rgba(56, 189, 248, 0.3)'
+          }}>
+            EMPIRICAL CONFORMANCE: 38%
+          </span>
         </div>
       </div>
 

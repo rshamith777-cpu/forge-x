@@ -223,7 +223,7 @@ export function App() {
 
   // Authenticated Daily Operations Application
   return (
-    <OrgDataProvider>
+    <OrgDataProvider currentOrg={currentOrg} onSelectOrg={setCurrentOrg}>
       <AppShell
         activeModule={activeModule}
         onSelectModule={(mod) => {
@@ -259,6 +259,8 @@ export function App() {
         {/* 0. DATA INGESTION: Staging & Synthetic Generation */}
         {activeModule === 'ingestion' && (
           <DataIngestionView
+            currentOrg={currentOrg}
+            onSelectOrg={setCurrentOrg}
             onNavigateToTwin={() => navigateTo('/app/twin')}
             onNavigateToObserve={() => navigateTo('/app/observe')}
             onNavigateToDecide={() => navigateTo('/app/decide')}
@@ -268,6 +270,7 @@ export function App() {
         {/* 0.5. OBSERVE & WORKFLOW DISCOVERY: Documented vs Discovered */}
         {activeModule === 'observe' && (
           <ObserveWorkflowView
+            currentOrg={currentOrg}
             onNavigateToDecide={() => navigateTo('/app/decide')}
             onNavigateToTwin={() => navigateTo('/app/twin')}
             onNavigateToIngestion={() => navigateTo('/app/ingestion')}
@@ -288,6 +291,7 @@ export function App() {
         {activeModule === 'home' && (
         <HomeWorkspaceView
           currentRole={currentRole}
+          currentOrg={currentOrg}
           onNavigate={(mod: string, param?: any) => {
             if (mod === 'incidents') {
               if (param?.openNew) {
@@ -343,6 +347,7 @@ export function App() {
       {activeModule === 'candidate' && (
         <CandidateV2View
           initialMode="candidate"
+          currentOrg={currentOrg}
           onNavigateToLab={() => navigateTo('/app/forgelab')}
           onNavigateToMemory={() => navigateTo('/app/memory')}
         />
@@ -352,6 +357,7 @@ export function App() {
       {activeModule === 'governance' && (
         <CandidateV2View
           initialMode="governance"
+          currentOrg={currentOrg}
           onNavigateToLab={() => navigateTo('/app/forgelab')}
           onNavigateToMemory={() => navigateTo('/app/memory')}
         />
@@ -392,6 +398,7 @@ export function App() {
       {/* 8. INCIDENTS: End-to-end Resolution & Vouchers */}
       {activeModule === 'incidents' && (
         <IncidentsView
+          currentOrg={currentOrg}
           initialFilter={incidentFilter}
           initialIncidentId={selectedIncidentId || undefined}
           initialOpenNew={openNewIncidentModal}
@@ -401,6 +408,7 @@ export function App() {
       {/* 9. POLICIES: Active Rules, Authority Matrix & Changes */}
       {activeModule === 'policies' && (
         <PoliciesView
+          currentOrg={currentOrg}
           initialPolicyId={selectedPolicyId}
           onNavigateToScenario={() => handleNavigateToScenario('Policy Amendment Simulation')}
         />
@@ -409,6 +417,7 @@ export function App() {
       {/* 10. AUDIT: Decision Records, Conformance & Historical Audit */}
       {activeModule === 'audit' && (
         <AuditCenterView
+          currentOrg={currentOrg}
           initialSubTab={auditSubTab as any}
           onNavigateToPolicy={() => handleNavigateToPolicy()}
         />

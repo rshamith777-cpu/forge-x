@@ -15,18 +15,24 @@ import {
   Award
 } from 'lucide-react';
 import { fetchCandidateV2, approveCandidatePolicy } from '../../lib/api';
+import { useOrgData } from '../../context/OrgDataContext';
+import { type OrganizationProfile } from '../layout/AppShell';
 
 interface CandidateV2ViewProps {
   initialMode?: 'candidate' | 'governance';
   onNavigateToLab?: () => void;
   onNavigateToMemory?: () => void;
+  currentOrg?: OrganizationProfile;
 }
 
 export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
   initialMode = 'candidate',
   onNavigateToLab,
-  onNavigateToMemory
+  onNavigateToMemory,
+  currentOrg: propOrg
 }) => {
+  const orgData = useOrgData();
+  const activeOrg = propOrg || orgData.currentOrg;
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [approving, setApproving] = useState<boolean>(false);
@@ -57,9 +63,10 @@ export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
         candidate_id: data?.candidate_playbook_v2?.candidate_id || "CAND-PB-V2-SYBIL-HARDENED",
         reviewer: "Sarah Jenkins (VP of Operations)",
         action: "APPROVE",
-        notes: "Approved following empirical verification in FORGE LAB (94% adversarial defense rate)."
+        notes: `Approved for ${activeOrg.name} following empirical verification in FORGE LAB (94% adversarial defense rate).`
       });
       setApprovalSuccess(res);
+      orgData.recordPlaybookApproval(activeOrg.id, '2.0.0-rc1', 'Sarah Jenkins (VP of Operations)', `Approved for ${activeOrg.name}`);
       await loadData();
     } catch (err) {
       console.error('Approval failed:', err);
@@ -69,14 +76,25 @@ export const CandidateV2View: React.FC<CandidateV2ViewProps> = ({
   };
 
   const cand = data?.candidate_playbook_v2;
-  const isApproved = cand?.status === 'APPROVED' || approvalSuccess !== null;
+  const isApproved = orgData.isCandidateV2Approved || cand?.status === 'APPROVED' || approvalSuccess !== null;
 
   return (
     <div style={{ padding: '28px 32px 60px 32px', maxWidth: '1440px', margin: '0 auto', textAlign: 'left', fontFamily: "'Rowdies', sans-serif" }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '18px' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+            <span style={{
+              fontSize: '11px',
+              fontFamily: "'JetBrains Mono', monospace",
+              padding: '3px 8px',
+              borderRadius: '4px',
+              background: 'rgba(56, 189, 248, 0.15)',
+              color: '#38bdf8',
+              border: '1px solid rgba(56, 189, 248, 0.3)'
+            }}>
+              TENANT: {activeOrg.name} ({activeOrg.activePolicyId})
+            </span>
             <span style={{
               fontSize: '11px',
               fontFamily: "'JetBrains Mono', monospace",

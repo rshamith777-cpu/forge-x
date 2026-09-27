@@ -6,13 +6,18 @@ import {
 } from 'lucide-react';
 import { fetchReliabilitySummary } from '../../lib/api';
 import { TeamAccessPanel } from '../TeamAccessPanel';
+import { useOrgData } from '../../context/OrgDataContext';
+import { type OrganizationProfile } from '../layout/AppShell';
 
 export interface HomeWorkspaceViewProps {
   currentRole: string;
   onNavigate: (module: string, subParam?: any) => void;
+  currentOrg?: OrganizationProfile;
 }
 
-export const HomeWorkspaceView: React.FC<HomeWorkspaceViewProps> = ({ currentRole, onNavigate }) => {
+export const HomeWorkspaceView: React.FC<HomeWorkspaceViewProps> = ({ currentRole, onNavigate, currentOrg: propOrg }) => {
+  const orgData = useOrgData();
+  const activeOrg = propOrg || orgData.currentOrg;
   const [reliability, setReliability] = useState<any>(null);
 
   useEffect(() => {
@@ -25,10 +30,22 @@ export const HomeWorkspaceView: React.FC<HomeWorkspaceViewProps> = ({ currentRol
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
         <div>
           <TeamAccessPanel />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
             <span className="badge badge-emerald">SYSTEM OPERATIONAL</span>
-            <span className="badge badge-cyan">SOC-2 COMPLIANCE ACTIVE</span>
-            <span className="badge badge-amber" style={{ fontSize: '10.5px' }}>LOCAL FALLBACK (BM25)</span>
+            <span style={{
+              fontSize: '11px',
+              fontFamily: "'JetBrains Mono', monospace",
+              padding: '3px 8px',
+              borderRadius: '4px',
+              background: 'rgba(56, 189, 248, 0.15)',
+              color: '#38bdf8',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              fontWeight: 700
+            }}>
+              DATASET: {activeOrg.name} ({activeOrg.tier})
+            </span>
+            <span className="badge badge-cyan">{activeOrg.compliance}</span>
+            <span className="badge badge-amber" style={{ fontSize: '10.5px' }}>POLICY: {activeOrg.activePolicyId}</span>
           </div>
           <h1 style={{
             fontSize: '28px',
@@ -40,7 +57,7 @@ export const HomeWorkspaceView: React.FC<HomeWorkspaceViewProps> = ({ currentRol
             Good morning, {currentRole}.
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '15px', fontWeight: 300, margin: 0 }}>
-            Here is what needs your operational attention today across customer incidents and policy rules.
+            Active organization: <strong style={{ color: '#e2e8f0' }}>{activeOrg.name}</strong> • ${activeOrg.mrr.toLocaleString()} MRR • Contract SLA: {activeOrg.slaHours}h.
           </p>
         </div>
 

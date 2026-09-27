@@ -2,23 +2,31 @@ import React, { useState, useRef } from 'react';
 import { 
   UploadCloud, Database, Cpu, CheckCircle2, AlertTriangle, ArrowRight, 
   FileText, Layers, ShieldCheck, Zap, Sparkles, RefreshCw, XCircle, 
-  ExternalLink, HardDrive, GitBranch, Terminal, Shield, Users, Radio
+  ExternalLink, HardDrive, GitBranch, Terminal, Shield, Users, Radio,
+  Building
 } from 'lucide-react';
 import { useOrgData } from '../../context/OrgDataContext';
+import { ORGANIZATIONS, type OrganizationProfile } from '../layout/AppShell';
 
 export interface DataIngestionViewProps {
   onNavigateToTwin?: () => void;
   onNavigateToObserve?: () => void;
   onNavigateToDecide?: () => void;
+  currentOrg?: OrganizationProfile;
+  onSelectOrg?: (org: OrganizationProfile) => void;
 }
 
 export const DataIngestionView: React.FC<DataIngestionViewProps> = ({
   onNavigateToTwin,
   onNavigateToObserve,
-  onNavigateToDecide
+  onNavigateToDecide,
+  currentOrg: propOrg,
+  onSelectOrg: propOnSelectOrg
 }) => {
   const {
     isLoaded,
+    currentOrg: contextOrg,
+    setCurrentOrg: setContextOrg,
     datasetSummary,
     pipelineStatus,
     pipelineSteps,
@@ -319,6 +327,101 @@ export const DataIngestionView: React.FC<DataIngestionViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* ENTERPRISE DATASET & MULTI-TENANT ORGANIZATIONAL FABRIC SELECTOR */}
+      <div style={{
+        background: 'rgba(6, 12, 24, 0.75)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        borderRadius: '14px',
+        padding: '20px 24px',
+        marginBottom: '26px',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Building size={16} color="#38bdf8" />
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff', letterSpacing: '0.04em' }}>
+                SELECT TARGET ENTERPRISE DATASET (SYNCHRONIZES ALL PAGES)
+              </span>
+            </div>
+            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+              Selecting an organization immediately focuses the Digital Twin, Incidents, Policies, Decisions, and Audit Ledger around this dataset.
+            </div>
+          </div>
+          <span style={{
+            fontSize: '11px',
+            fontFamily: "'JetBrains Mono', monospace",
+            padding: '4px 10px',
+            borderRadius: '6px',
+            background: 'rgba(56, 189, 248, 0.15)',
+            color: '#38bdf8',
+            border: '1px solid rgba(56, 189, 248, 0.3)'
+          }}>
+            ACTIVE: {(propOrg || contextOrg || ORGANIZATIONS[0]).name} ({(propOrg || contextOrg || ORGANIZATIONS[0]).tier})
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
+          {ORGANIZATIONS.map(org => {
+            const activeCurrent = propOrg || contextOrg || ORGANIZATIONS[0];
+            const isSelected = org.id === activeCurrent.id;
+            return (
+              <div
+                key={org.id}
+                onClick={() => {
+                  if (setContextOrg) setContextOrg(org);
+                  if (propOnSelectOrg) propOnSelectOrg(org);
+                }}
+                style={{
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  background: isSelected ? 'rgba(6, 182, 212, 0.16)' : 'rgba(255, 255, 255, 0.03)',
+                  border: isSelected ? `2px solid ${org.accentColor}` : '1px solid rgba(255, 255, 255, 0.08)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <div style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '6px',
+                    background: org.avatarBg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    color: '#fff',
+                    flexShrink: 0
+                  }}>
+                    {org.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: isSelected ? '#ffffff' : '#e2e8f0' }}>
+                      {org.name}
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: org.accentColor, fontWeight: 600 }}>
+                      {org.tier}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.4, marginBottom: '8px' }}>
+                  {org.domain}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace", color: '#64748b', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px' }}>
+                  <span>Policy: {org.activePolicyId}</span>
+                  <span>SLA: {org.slaHours}h</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* 2. Mode Selector Navigation Tabs */}
       <div style={{

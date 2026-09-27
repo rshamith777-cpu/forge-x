@@ -2,21 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, Search, Filter, PlusCircle, CheckCircle2, 
   AlertTriangle, Clock, ArrowRight, X, FileText, Download, 
-  ChevronRight, ExternalLink, RefreshCw, UserCheck
+  ChevronRight, ExternalLink, RefreshCw, UserCheck, Building
 } from 'lucide-react';
 import { fetchIncidents, fetchIncidentDetail, createIncident, resolveIncident } from '../../lib/api';
+import { useOrgData } from '../../context/OrgDataContext';
+import { type OrganizationProfile } from '../layout/AppShell';
 
 export interface IncidentsViewProps {
   initialFilter?: string;
   initialIncidentId?: string;
   initialOpenNew?: boolean;
+  currentOrg?: OrganizationProfile;
 }
 
 export const IncidentsView: React.FC<IncidentsViewProps> = ({
   initialFilter,
   initialIncidentId,
-  initialOpenNew
+  initialOpenNew,
+  currentOrg: propOrg
 }) => {
+  const orgData = useOrgData();
+  const activeOrg = propOrg || orgData.currentOrg;
+  const [filterByCurrentOrg, setFilterByCurrentOrg] = useState(true);
   const [incidents, setIncidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>(initialFilter || 'All');
@@ -43,10 +50,35 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
         status: activeTab === 'All' ? undefined : activeTab,
         search: searchQuery || undefined
       });
-      setIncidents(res.incidents || []);
+      let list = res.incidents || [];
+      if (orgData.resolvedIncidents) {
+        list = list.map((item: any) => {
+          if (orgData.resolvedIncidents[item.id]) {
+            return { ...item, status: 'Resolved' };
+          }
+          return item;
+        });
+      }
+      if (filterByCurrentOrg) {
+        const orgIncidents = list.filter((i: any) => {
+          const c = (i.customer || '').toLowerCase();
+          const p = (i.policy_id || '').toLowerCase();
+          const targetSlug = activeOrg.id.replace('org-', '').toLowerCase();
+          return c.includes(targetSlug) || 
+                 c.includes(activeOrg.name.toLowerCase().split(' ')[0]) || 
+                 p === activeOrg.activePolicyId.toLowerCase();
+        });
+        if (orgIncidents.length > 0) {
+          const otherIncidents = list.filter((i: any) => !orgIncidents.includes(i));
+          list = [...orgIncidents, ...otherIncidents];
+        }
+      }
+      setIncidents(list);
       if (initialIncidentId && !selectedIncident) {
-        const match = res.incidents.find((i: any) => i.id.toLowerCase() === initialIncidentId.toLowerCase());
+        const match = list.find((i: any) => i.id.toLowerCase() === initialIncidentId.toLowerCase());
         if (match) setSelectedIncident(match);
+      } else if (!selectedIncident && list.length > 0) {
+        setSelectedIncident(list[0]);
       }
     } catch (err) {
       console.error("Failed to load incidents", err);
@@ -57,7 +89,7 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
 
   useEffect(() => {
     loadIncidents();
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, activeOrg.id, filterByCurrentOrg]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,11 +122,12 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
       const res = await resolveIncident(incidentId, {
         approver: 'Ananya R. (Operations Lead)',
         approved_amount: selectedIncident.recommended_credit ?? selectedIncident.claimed_amount ?? 500,
-        notes: `Approved in accordance with ${selectedIncident.policy_id || 'POL-OPS-012'}`
+        notes: `Approved in accordance with ${selectedIncident.policy_id || activeOrg.activePolicyId || 'POL-OPS-012'}`
       });
       if (res?.voucher) {
         setVoucherModal(res.voucher);
         setSelectedIncident(res.incident || { ...selectedIncident, status: 'Resolved' });
+        orgData.recordIncidentResolution(incidentId, res.voucher);
         loadIncidents();
       }
     } catch (err) {
@@ -107,7 +140,7 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
   return (
     <div style={{ padding: '28px 32px 60px 32px', maxWidth: '1440px', margin: '0 auto', textAlign: 'left' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '18px' }}>
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
             Incidents
@@ -124,6 +157,64 @@ export const IncidentsView: React.FC<IncidentsViewProps> = ({
             style={{ fontSize: '13.5px', padding: '10px 18px', borderRadius: '8px' }}
           >
             <PlusCircle size={15} /> + New Incident
+          </button>
+        </div>
+      </div>
+
+      {/* Active Organization Context Filter Banner */}
+      <div style={{
+        background: 'rgba(6, 12, 24, 0.75)',
+        border: `1px solid ${filterByCurrentOrg ? activeOrg.accentColor + '55' : 'rgba(255, 255, 255, 0.12)'}`,
+        borderRadius: '12px',
+        padding: '12px 18px',
+        marginBottom: '20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px',
+        backdropFilter: 'blur(16px)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '6px',
+            background: activeOrg.avatarBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '11px',
+            fontWeight: 800,
+            color: '#fff'
+          }}>
+            {activeOrg.name.charAt(0)}
+          </div>
+          <div>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>
+              Target Tenant: <span style={{ color: activeOrg.accentColor }}>{activeOrg.name}</span> ({activeOrg.tier})
+            </span>
+            <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '8px' }}>
+              Governing Policy: <strong style={{ color: '#e2e8f0' }}>{activeOrg.activePolicyId}</strong> • Contract SLA: {activeOrg.slaHours}h
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            onClick={() => setFilterByCurrentOrg(!filterByCurrentOrg)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              background: filterByCurrentOrg ? 'rgba(6, 182, 212, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+              border: `1px solid ${filterByCurrentOrg ? '#38bdf8' : 'rgba(255, 255, 255, 0.15)'}`,
+              color: filterByCurrentOrg ? '#38bdf8' : '#94a3b8',
+              fontSize: '11.5px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            {filterByCurrentOrg ? `Prioritizing ${activeOrg.name}` : 'Showing All Organizations'}
           </button>
         </div>
       </div>

@@ -22,7 +22,62 @@ import {
   DEMO_RED_TEAM_SCENARIOS
 } from './demoData';
 
-let localIncidents = [...DEMO_ENTERPRISE_INCIDENTS];
+function loadStoredIncidents() {
+  try {
+    const saved = localStorage.getItem('forge_incidents');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return [...DEMO_ENTERPRISE_INCIDENTS];
+}
+
+export let localIncidents = loadStoredIncidents();
+
+function loadStoredAuditLedger() {
+  try {
+    const saved = localStorage.getItem('forge_audit_ledger');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return [...DEMO_AUDIT_LEDGER.ledger];
+}
+
+export let localAuditLedger = loadStoredAuditLedger();
+
+export function saveStoredIncidents() {
+  try {
+    localStorage.setItem('forge_incidents', JSON.stringify(localIncidents));
+  } catch {}
+}
+
+export function saveStoredAuditLedger() {
+  try {
+    localStorage.setItem('forge_audit_ledger', JSON.stringify(localAuditLedger));
+  } catch {}
+}
+
+export function addAuditLedgerRecord(record: {
+  incident_id?: string;
+  action: string;
+  actor: string;
+  policy: string;
+  reference: string;
+  status?: string;
+  amount?: string;
+}) {
+  const newRecord = {
+    timestamp: "Just now",
+    record_id: `REC-${Date.now().toString().slice(-6)}`,
+    incident_id: record.incident_id || "SYS-EVENT",
+    action: record.action,
+    actor: record.actor,
+    policy: record.policy,
+    reference: record.reference,
+    status: record.status || "Verified",
+    amount: record.amount || "N/A"
+  };
+  localAuditLedger.unshift(newRecord);
+  saveStoredAuditLedger();
+  return newRecord;
+}
 
 function resolveApiBase(): string {
   if (import.meta.env.VITE_API_URL) {
@@ -504,7 +559,7 @@ export async function fetchIncidentDetail(incidentId: string): Promise<any> {
   } catch (e) {
     console.info("Failed fetching incident detail, using fallback", e);
   }
-  const inc = localIncidents.find(i => (i.id || '').toLowerCase() === (incidentId || '').toLowerCase());
+  const inc = localIncidents.find((i: any) => (i.id || '').toLowerCase() === (incidentId || '').toLowerCase());
   if (inc) return inc;
   return localIncidents[0] || {
     id: incidentId,
@@ -595,7 +650,7 @@ export async function resolveIncident(incidentId: string, data: {
     console.info("Fallback resolve incident:", e);
   }
 
-  const inc = localIncidents.find(i => (i.id || '').toLowerCase() === (incidentId || '').toLowerCase()) || localIncidents[0];
+  const inc = localIncidents.find((i: any) => (i.id || '').toLowerCase() === (incidentId || '').toLowerCase()) || localIncidents[0];
   if (inc) {
     inc.status = 'Resolved';
     inc.updated_at = 'Just now';
@@ -619,6 +674,18 @@ export async function resolveIncident(incidentId: string, data: {
     environment: 'PRODUCTION ENFORCED • SYNTHETIC ENTERPRISE AUDIT TRAIL'
   };
 
+  saveStoredIncidents();
+
+  addAuditLedgerRecord({
+    incident_id: inc.id,
+    action: "Settlement Voucher Approved & Disbursed",
+    actor: data.approver || 'Ananya R. (Operations Lead)',
+    policy: inc.policy_id || 'POL-OPS-012',
+    reference: voucher.voucher_reference,
+    status: "Verified",
+    amount: `$${finalAmount.toLocaleString()}`
+  });
+
   return {
     status: "success",
     incident: inc,
@@ -631,9 +698,12 @@ export async function fetchAuditLedger(): Promise<any> {
     const res = await fetch(`${API_BASE}/api/audit/ledger`);
     if (res.ok) return await res.json();
   } catch (e) {
-    console.info("Using DEMO_AUDIT_LEDGER fallback:", e);
+    console.info("Using localAuditLedger fallback:", e);
   }
-  return DEMO_AUDIT_LEDGER;
+  return {
+    ledger: localAuditLedger,
+    total: localAuditLedger.length
+  };
 }
 
 export async function fetchPoliciesSummary(): Promise<any> {
@@ -767,6 +837,22 @@ export async function fetchCandidateV2(): Promise<any> {
 }
 
 export async function approveCandidatePolicy(params: any): Promise<any> {
+  try {
+    localStorage.setItem('forge_v2_approved', 'true');
+    localStorage.setItem('forge_v2_approved_at', new Date().toISOString());
+    localStorage.setItem('forge_v2_reviewer', params?.reviewer || 'Sarah Jenkins (VP of Operations)');
+  } catch {}
+
+  addAuditLedgerRecord({
+    incident_id: "CAND-V2",
+    action: "Candidate Playbook V2 Promoted to Production",
+    actor: params?.reviewer || "Sarah Jenkins (VP of Operations)",
+    policy: "POL-OPS-012",
+    reference: "PB-OPS-V2-SYBIL-HARDENED",
+    status: "Cryptographically Verified",
+    amount: "$33,433 Fraud Mitigated"
+  });
+
   return new Promise((resolve) => {
     setTimeout(() => resolve({
       status: "APPROVED",

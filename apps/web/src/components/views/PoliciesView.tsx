@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, ShieldCheck, AlertTriangle, ArrowRight, PlusCircle, 
-  Search, Lock, CheckCircle2, GitFork, RefreshCw, ChevronRight, X
+  Search, Lock, CheckCircle2, GitFork, RefreshCw, ChevronRight, X, Building
 } from 'lucide-react';
 import { fetchPoliciesSummary } from '../../lib/api';
+import { useOrgData } from '../../context/OrgDataContext';
+import { type OrganizationProfile } from '../layout/AppShell';
 
 export interface PoliciesViewProps {
   initialPolicyId?: string | null;
   onNavigateToScenario?: () => void;
+  currentOrg?: OrganizationProfile;
 }
 
-export const PoliciesView: React.FC<PoliciesViewProps> = ({ initialPolicyId, onNavigateToScenario }) => {
+export const PoliciesView: React.FC<PoliciesViewProps> = ({ 
+  initialPolicyId, 
+  onNavigateToScenario,
+  currentOrg: propOrg 
+}) => {
+  const orgData = useOrgData();
+  const activeOrg = propOrg || orgData.currentOrg;
   const [activeTab, setActiveTab] = useState<'active' | 'authority' | 'exceptions' | 'changes'>('active');
   const [policies, setPolicies] = useState<any[]>([]);
   const [authorityMatrix, setAuthorityMatrix] = useState<any[]>([]);
@@ -18,22 +27,28 @@ export const PoliciesView: React.FC<PoliciesViewProps> = ({ initialPolicyId, onN
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPolicy, setSelectedPolicy] = useState<any | null>(null);
   const [showChangeModal, setShowChangeModal] = useState(false);
+  const [changeThreshold, setChangeThreshold] = useState<number>(activeOrg.defaultClaim || 1500);
+  const [changeTargetPolicy, setChangeTargetPolicy] = useState<string>(activeOrg.activePolicyId);
 
   useEffect(() => {
     fetchPoliciesSummary().then((res: any) => {
       const pols = res.policies || [];
       setPolicies(pols);
       setAuthorityMatrix(res.authority_matrix || []);
-      if (initialPolicyId) {
-        const match = pols.find((p: any) => p.code.toLowerCase() === initialPolicyId.toLowerCase());
+      const targetId = initialPolicyId || activeOrg.activePolicyId;
+      if (targetId) {
+        const match = pols.find((p: any) => p.code.toLowerCase() === targetId.toLowerCase());
         if (match) setSelectedPolicy(match);
+        else if (pols.length > 0) setSelectedPolicy(pols[0]);
+      } else if (pols.length > 0) {
+        setSelectedPolicy(pols[0]);
       }
       setLoading(false);
     }).catch((err: any) => {
       console.error("Failed to load policies", err);
       setLoading(false);
     });
-  }, [initialPolicyId]);
+  }, [initialPolicyId, activeOrg.id]);
 
   const filteredPolicies = policies.filter(p => 
     searchQuery === '' || 
@@ -62,6 +77,60 @@ export const PoliciesView: React.FC<PoliciesViewProps> = ({ initialPolicyId, onN
           >
             <PlusCircle size={15} /> Create Policy Change
           </button>
+        </div>
+      </div>
+
+      {/* Active Organization Context Policy Banner */}
+      <div style={{
+        background: 'rgba(6, 12, 24, 0.75)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        borderRadius: '12px',
+        padding: '12px 18px',
+        marginBottom: '20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px',
+        backdropFilter: 'blur(16px)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '6px',
+            background: activeOrg.avatarBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '11px',
+            fontWeight: 800,
+            color: '#fff'
+          }}>
+            {activeOrg.name.charAt(0)}
+          </div>
+          <div>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>
+              Tenant Governance: <span style={{ color: activeOrg.accentColor }}>{activeOrg.name}</span>
+            </span>
+            <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '8px' }}>
+              Primary Active Policy: <strong style={{ color: '#e2e8f0' }}>{activeOrg.activePolicyId}</strong> • Contract SLA: {activeOrg.slaHours}h • Standard Authority Limit: ${activeOrg.defaultClaim}
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{
+            fontSize: '11px',
+            fontFamily: "'JetBrains Mono', monospace",
+            padding: '4px 10px',
+            borderRadius: '6px',
+            background: 'rgba(56, 189, 248, 0.15)',
+            color: '#38bdf8',
+            border: '1px solid rgba(56, 189, 248, 0.3)'
+          }}>
+            COMPLIANCE: {activeOrg.compliance}
+          </span>
         </div>
       </div>
 
@@ -342,18 +411,30 @@ export const PoliciesView: React.FC<PoliciesViewProps> = ({ initialPolicyId, onN
 
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>TARGET POLICY</label>
-              <select style={{ width: '100%', padding: '10px', borderRadius: '6px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fff', fontSize: '13.5px' }}>
-                <option>POL-OPS-012 — Refund & Credit Authorization Limits</option>
-                <option>POL-SLA-ENT — Enterprise Disruption Response Standard</option>
+              <select 
+                value={changeTargetPolicy}
+                onChange={e => setChangeTargetPolicy(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fff', fontSize: '13.5px' }}
+              >
+                <option value={activeOrg.activePolicyId}>{activeOrg.activePolicyId} — {activeOrg.activePlaybook}</option>
+                <option value="POL-OPS-012">POL-OPS-012 — Refund & Credit Authorization Limits</option>
+                <option value="POL-SLA-ENT">POL-SLA-ENT — Enterprise Disruption Response Standard</option>
+                <option value="POL-FIN-102">POL-FIN-102 — Capital Clearing & Wire Exception Protocol</option>
+                <option value="POL-HLTH-004">POL-HLTH-004 — Critical EHR Telemetry Priority Response</option>
               </select>
             </div>
 
             <div style={{ marginBottom: '16px' }}>
               <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>PROPOSED THRESHOLD CHANGE ($)</label>
-              <input type="number" defaultValue={1500} style={{ width: '100%', padding: '10px', borderRadius: '6px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fff', fontSize: '13.5px' }} />
+              <input 
+                type="number" 
+                value={changeThreshold} 
+                onChange={e => setChangeThreshold(Number(e.target.value))}
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fff', fontSize: '13.5px' }} 
+              />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap' }}>
               <button onClick={() => setShowChangeModal(false)} className="btn-secondary" style={{ fontSize: '13px', padding: '8px 16px' }}>
                 Cancel
               </button>
@@ -362,10 +443,21 @@ export const PoliciesView: React.FC<PoliciesViewProps> = ({ initialPolicyId, onN
                   setShowChangeModal(false);
                   if (onNavigateToScenario) onNavigateToScenario();
                 }} 
+                className="btn-secondary" 
+                style={{ fontSize: '13px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <GitFork size={14} /> Simulate Scenario
+              </button>
+              <button 
+                onClick={() => {
+                  orgData.recordPolicyAmendment(changeTargetPolicy, { maxRefundAuto: Number(changeThreshold) });
+                  setShowChangeModal(false);
+                  alert(`Policy ${changeTargetPolicy} successfully amended and recorded into audit ledger.`);
+                }} 
                 className="btn-primary" 
                 style={{ fontSize: '13px', padding: '8px 18px', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <GitFork size={14} /> Test in Scenario Planning
+                <CheckCircle2 size={14} /> Approve & Ratify Amendment
               </button>
             </div>
           </div>

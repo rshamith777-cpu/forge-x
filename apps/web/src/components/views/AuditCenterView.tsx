@@ -4,6 +4,8 @@ import {
   Search, Download, ExternalLink, RefreshCw, GitFork, ArrowRight
 } from 'lucide-react';
 import { fetchAuditLedger, fetchArchaeology, fetchTimeMachineTimeline, inspectTimeMachine } from '../../lib/api';
+import { useOrgData } from '../../context/OrgDataContext';
+import { type OrganizationProfile } from '../layout/AppShell';
 import { ArchaeologyView } from '../ArchaeologyView';
 import { TimeMachineView } from '../TimeMachineView';
 import { OrganizationalGraphView } from '../OrganizationalGraphView';
@@ -11,15 +13,22 @@ import { OrganizationalGraphView } from '../OrganizationalGraphView';
 export interface AuditCenterViewProps {
   initialSubTab?: 'records' | 'compliance' | 'historical' | 'evidence' | 'systems';
   onNavigateToPolicy?: () => void;
+  currentOrg?: OrganizationProfile;
 }
 
-export const AuditCenterView: React.FC<AuditCenterViewProps> = ({ initialSubTab, onNavigateToPolicy }) => {
+export const AuditCenterView: React.FC<AuditCenterViewProps> = ({ 
+  initialSubTab, 
+  onNavigateToPolicy,
+  currentOrg: propOrg 
+}) => {
+  const orgData = useOrgData();
+  const activeOrg = propOrg || orgData.currentOrg;
   const [subTab, setSubTab] = useState<'records' | 'compliance' | 'historical' | 'evidence' | 'systems'>(initialSubTab || 'records');
   const [ledger, setLedger] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
+  const loadLedger = () => {
     fetchAuditLedger().then((res: any) => {
       setLedger(res.ledger || []);
       setLoading(false);
@@ -27,20 +36,25 @@ export const AuditCenterView: React.FC<AuditCenterViewProps> = ({ initialSubTab,
       console.error("Failed to load audit ledger", err);
       setLoading(false);
     });
-  }, []);
+  };
+
+  useEffect(() => {
+    loadLedger();
+  }, [activeOrg.id]);
 
   const filteredLedger = ledger.filter(r => 
     searchQuery === '' ||
     r.record_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.incident_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.policy?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.actor?.toLowerCase().includes(searchQuery.toLowerCase())
+    r.actor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.action?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div style={{ padding: '28px 32px 60px 32px', maxWidth: '1440px', margin: '0 auto', textAlign: 'left' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
             Audit Center
@@ -52,12 +66,73 @@ export const AuditCenterView: React.FC<AuditCenterViewProps> = ({ initialSubTab,
 
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
+            onClick={loadLedger}
+            className="btn-secondary"
+            style={{ fontSize: '13px', padding: '10px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <RefreshCw size={14} /> Refresh Logs
+          </button>
+          <button 
             onClick={() => alert("Audit ledger exported successfully to CSV.")}
             className="btn-secondary"
             style={{ fontSize: '13px', padding: '10px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <Download size={14} /> Export Audit Ledger (CSV)
           </button>
+        </div>
+      </div>
+
+      {/* Active Tenant Audit Context Banner */}
+      <div style={{
+        background: 'rgba(6, 12, 24, 0.75)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        borderRadius: '12px',
+        padding: '12px 18px',
+        marginBottom: '20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px',
+        backdropFilter: 'blur(16px)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '6px',
+            background: activeOrg.avatarBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '11px',
+            fontWeight: 800,
+            color: '#fff'
+          }}>
+            {activeOrg.name.charAt(0)}
+          </div>
+          <div>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>
+              Tenant Ledger: <span style={{ color: activeOrg.accentColor }}>{activeOrg.name}</span>
+            </span>
+            <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '8px' }}>
+              Compliance Matrix: <strong style={{ color: '#e2e8f0' }}>{activeOrg.compliance}</strong> • Active Policy: {activeOrg.activePolicyId}
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{
+            fontSize: '11px',
+            fontFamily: "'JetBrains Mono', monospace",
+            padding: '4px 10px',
+            borderRadius: '6px',
+            background: 'rgba(16, 185, 129, 0.15)',
+            color: '#34d399',
+            border: '1px solid rgba(16, 185, 129, 0.3)'
+          }}>
+            TAMPER-EVIDENT CRYPTOGRAPHIC LOGS
+          </span>
         </div>
       </div>
 
